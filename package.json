@@ -6,6 +6,7 @@
   "main": "server.js",
   "scripts": {
     "start": "node --env-file-if-exists=.env server.js",
+    "build": "node scripts/build.js",
     "check:cloud": "node --env-file-if-exists=.env scripts/check-cloud.js",
     "migrate:cloud": "node --env-file-if-exists=.env scripts/migrate-to-cloud.js",
     "reset:password": "node --env-file-if-exists=.env scripts/reset-password.js",

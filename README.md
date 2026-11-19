@@ -141,9 +141,37 @@ Built in:
 2. Add the site to **Google Search Console** and **Bing Webmaster Tools**, and submit `https://<your-domain>/sitemap.xml` in each.
 3. Test a story at **search.google.com/test/rich-results**, and share a link in WhatsApp to see the preview.
 
-## Hosting
+## Hosting on Vercel (free)
 
-Any host that runs Node.js 22.9 or newer works: Render, Railway, Fly.io, a VPS and so on. Add the settings from `.env` as the host's environment variables. Because stories and images live online, the host doesn't need to keep any files. Static-only hosts such as Netlify or GitHub Pages won't work, because the admin page needs the server.
+The site runs on Vercel's free **Hobby** plan, connected to the GitHub repo `aimemoria/hiddentimes.org`. Every `git push` to `main` puts the new version online by itself, in about a minute.
+
+### First setup (once)
+
+1. Sign in at **vercel.com** with GitHub (@aimemoria).
+2. **Add New → Project**, pick **hiddentimes.org**, and click **Import**. Vercel finds the settings by itself: Express, with `npm run build` as the build step.
+3. Before clicking **Deploy**, open **Environment Variables** and add these. Copy the values from your `.env`, but never into a file that gets uploaded.
+
+   | Name | Value |
+   |---|---|
+   | `SITE_URL` | `https://www.hiddentimes.org` |
+   | `ADMIN_PASSWORD` | the starting admin password |
+   | `SESSION_SECRET` | a long random text: it signs the admin sign-in cookie |
+   | `DATABASE_URL` | the Supabase **Transaction pooler** address (port 6543, best for Vercel) |
+   | `DATABASE_CA` | the full text of `certs/supabase-ca.crt`. Open the file in VS Code, copy everything, and paste it in |
+   | `S3_BUCKET`, `S3_REGION`, `S3_ENDPOINT`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`, `S3_PUBLIC_URL`, `S3_FORCE_PATH_STYLE` | same as in `.env` |
+
+   Leave `DATABASE_CA_FILE` out: the `certs/` folder is never uploaded.
+4. Click **Deploy**. The site opens at a `…vercel.app` address. Check it, and sign in at `/admin`.
+5. **Settings → Domains:** add `www.hiddentimes.org` and `hiddentimes.org`, and follow the DNS steps Vercel shows at your domain registrar. Vercel adds HTTPS by itself.
+
+### What's different on Vercel
+
+- **Admin sign-in** is a signed cookie, not memory on the server, because Vercel starts and stops copies of the server all the time. Changing the password signs out every other device.
+- **Cover images** can be 4 MB at most (Vercel's limit is 4.5 MB per request). The admin page shrinks bigger photos before they're sent, so this rarely matters.
+- **Files in `public/`** are served by Vercel directly. `npm run build` copies the logo kit, the image shrinker and the Markdown helpers in there. On this computer `npm start` serves them from their own folders, so you don't need to build.
+- Without `DATABASE_URL` the site won't start on Vercel. That's on purpose: it can't keep files, so stories would be lost.
+
+Other hosts that run Node.js 22.9 or newer (Render, Railway, a VPS) also work with the same environment variables.
 
 ### Other addresses (hiddentimes.com typos)
 

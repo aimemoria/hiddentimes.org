@@ -20,16 +20,43 @@ const {
   clean, slugify, safeUrl, youtubeId, makeExcerpt, readResources, sniffImage, newId, randomSuffix, readMinutes,
 } = require('./lib/util');
 
+if (config.ON_VERCEL && !config.usePostgres) {
+  // Vercel can't keep files, so the local data/ fallback would lose every story
+  throw new Error('DATABASE_URL is not set. Add it in Vercel → Project → Settings → Environment Variables.');
+}
 const store = createStore();
 const media = createMedia();
+// prepares the database tables once; every request waits for it (see the first middleware)
+const ready = store.init();
+ready.catch(() => {}); // the error is reported where `ready` is used
 
 if (!process.env.ADMIN_PASSWORD) {
   console.warn('! ADMIN_PASSWORD is not set, using the default "hiddentimes". Set it before going live.');
 }
 
 // ---------- sessions ----------
-const sessions = new Map(); // token -> expiry
+// A signed-in admin carries a signed cookie: "<expiry>.<password version>.<signature>".
+// Nothing is kept in the server's memory, so it works on hosts that start fresh copies of the
+// server at any time (Vercel). The signature uses a key derived from SESSION_SECRET (or, if that
+// isn't set, ADMIN_PASSWORD), so a cookie can't be made up. The "password version" is a short
+// fingerprint of the current password: changing the password makes every older cookie invalid.
 const COOKIE = 'ht_admin';
+const PASSWORD_KEY = 'admin_password_hash';
+const SESSION_KEY = crypto.createHash('sha256')
+  .update('hiddentimes-session|' + (process.env.SESSION_SECRET || config.ADMIN_PASSWORD)).digest();
+const sha = (s) => crypto.createHash('sha256').update(String(s)).digest('base64url');
+const sign = (s) => crypto.createHmac('sha256', SESSION_KEY).update(s).digest('base64url');
+
+const passwordVersion = async () => {
+  const stored = await store.getSetting(PASSWORD_KEY);
+  return sha(stored ? stored.value : 'starting:' + config.ADMIN_PASSWORD).slice(0, 16);
+};
+const makeSession = async () => {
+  const body = `${Date.now() + config.SESSION_HOURS * 3600 * 1000}.${await passwordVersion()}`;
+  return `${body}.${sign(body)}`;
+};
+const sessionCookie = (req, token) =>
+  `${COOKIE}=${token}; HttpOnly; SameSite=Strict; Path=/; Max-Age=${config.SESSION_HOURS * 3600}${req.secure ? '; Secure' : ''}`;
 
 const getCookie = (req, name) => {
   for (const part of (req.headers.cookie || '').split(';')) {
@@ -38,16 +65,20 @@ const getCookie = (req, name) => {
   }
   return null;
 };
-const isAuthed = (req) => {
-  const t = getCookie(req, COOKIE);
-  if (!t || !sessions.has(t)) return false;
-  if (sessions.get(t) < Date.now()) { sessions.delete(t); return false; }
-  return true;
+const isAuthed = async (req) => {
+  const parts = (getCookie(req, COOKIE) || '').split('.');
+  if (parts.length !== 3) return false;
+  const [expires, version, signature] = parts;
+  const expected = sign(`${expires}.${version}`);
+  if (signature.length !== expected.length ||
+      !crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expected))) return false;
+  if (!(Number(expires) > Date.now())) return false;
+  return version === await passwordVersion();
 };
-const requireAuth = (req, res, next) => (isAuthed(req) ? next() : res.status(401).json({ error: 'Not signed in' }));
+const requireAuth = (req, res, next) =>
+  isAuthed(req).then((ok) => (ok ? next() : res.status(401).json({ error: 'Not signed in' })), next);
 // The admin password: once changed in Account, a scrypt hash in the database is used.
 // Until then, the starting password from ADMIN_PASSWORD (.env / hosting settings) works.
-const PASSWORD_KEY = 'admin_password_hash';
 const passwordMatches = async (input) => {
   const stored = await store.getSetting(PASSWORD_KEY);
   if (stored) return verifyPassword(input, stored.value);
@@ -73,7 +104,7 @@ const noteFailure = (ip) => {
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: config.MAX_IMAGE_BYTES, files: 1 } });
 const uploadCover = (req, res, next) =>
   upload.single('coverFile')(req, res, (err) => {
-    if (err) return res.status(400).json({ error: err.code === 'LIMIT_FILE_SIZE' ? 'Image is larger than 8 MB' : 'Upload failed' });
+    if (err) return res.status(400).json({ error: err.code === 'LIMIT_FILE_SIZE' ? `Image is larger than ${config.MAX_IMAGE_BYTES / 1024 / 1024} MB` : 'Upload failed' });
     next();
   });
 
@@ -119,7 +150,8 @@ const ah = (fn) => (req, res, next) => Promise.resolve(fn(req, res, next)).catch
 // ---------- app ----------
 const app = express();
 app.disable('x-powered-by');
-app.set('trust proxy', 1); // behind a host's proxy (Render, Railway, Fly…): real visitor IP + https detection
+app.set('trust proxy', 1); // behind a host's proxy (Vercel, Render…): real visitor IP + https detection
+app.use((req, res, next) => ready.then(() => next(), next));
 
 // One true address. Anyone arriving on another of our domains (hiddentimes.com typed by mistake,
 // the bare hiddentimes.org without www, http://) is sent to SITE_URL with a permanent redirect,
@@ -186,10 +218,7 @@ app.post('/api/login', ah(async (req, res) => {
     return res.status(401).json({ error: 'Wrong password' });
   }
   failures.delete(ip);
-  const token = crypto.randomBytes(32).toString('hex');
-  sessions.set(token, Date.now() + config.SESSION_HOURS * 3600 * 1000);
-  res.setHeader('Set-Cookie',
-    `${COOKIE}=${token}; HttpOnly; SameSite=Strict; Path=/; Max-Age=${config.SESSION_HOURS * 3600}${req.secure ? '; Secure' : ''}`);
+  res.setHeader('Set-Cookie', sessionCookie(req, await makeSession()));
   res.json({ ok: true });
 }));
 
@@ -209,18 +238,16 @@ app.post('/api/admin/password', requireAuth, ah(async (req, res) => {
   if (next.length > 200) return res.status(400).json({ error: 'The new password is too long (200 characters at most).' });
   if (next === current) return res.status(400).json({ error: 'The new password must be different from the current one.' });
   await store.setSetting(PASSWORD_KEY, await hashPassword(next));
-  // sign out every other device; this one stays signed in
-  const mine = getCookie(req, COOKIE);
-  for (const t of [...sessions.keys()]) if (t !== mine) sessions.delete(t);
+  // the new password makes every older cookie invalid (other devices are signed out);
+  // this device gets a fresh cookie so it stays signed in
+  res.setHeader('Set-Cookie', sessionCookie(req, await makeSession()));
   res.json({ ok: true });
 }));
 app.post('/api/logout', (req, res) => {
-  const t = getCookie(req, COOKIE);
-  if (t) sessions.delete(t);
   res.setHeader('Set-Cookie', `${COOKIE}=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0`);
   res.json({ ok: true });
 });
-app.get('/api/me', (req, res) => res.json({ authed: isAuthed(req) }));
+app.get('/api/me', ah(async (req, res) => res.json({ authed: await isAuthed(req) })));
 
 // ---------- analytics: visits reported by /assets/js/track.js ----------
 const collectHits = new Map(); // ip -> { n, since }: at most 120 reports a minute per address
@@ -238,12 +265,14 @@ const storyIdForSlug = async (slug) => {
 };
 
 app.post('/api/collect', ah(async (req, res) => {
-  res.status(204).end(); // answer at once; the browser doesn't wait for anything
+  // The reply goes out only after saving: on Vercel the server is paused as soon as it answers,
+  // so work left for afterwards could be lost. The browser sends these in the background anyway.
   const b = req.body || {};
   const ua = req.get('user-agent') || '';
-  if (analytics.isBot(ua) || isAuthed(req) || tooChatty(req.ip) || !analytics.UUID.test(String(b.id || ''))) return;
-  const visitor = analytics.visitorCode(req);
   try {
+    if (analytics.isBot(ua) || tooChatty(req.ip) || !analytics.UUID.test(String(b.id || ''))) return;
+    if (await isAuthed(req)) return; // the signed-in admin isn't counted
+    const visitor = analytics.visitorCode(req);
     if (b.t === 'start') {
       const path = String(b.path || '/').slice(0, 300);
       const slug = (path.match(/^\/story\/([^/?#]+)/) || [])[1];
@@ -259,7 +288,11 @@ app.post('/api/collect', ah(async (req, res) => {
       const scroll = Math.max(0, Math.min(100, Math.floor(Number(b.d) || 0)));
       await store.updateView(b.id, visitor, seconds, scroll);
     }
-  } catch (e) { console.warn('analytics:', e.message); }
+  } catch (e) {
+    console.warn('analytics:', e.message);
+  } finally {
+    res.status(204).end();
+  }
 }));
 
 app.get('/api/admin/analytics', requireAuth, ah(async (req, res) => {
@@ -361,17 +394,20 @@ app.use((err, req, res, next) => {
 });
 
 // ---------- start ----------
-(async () => {
-  try {
-    await store.init();
-  } catch (e) {
+// On this computer (`npm start`) the server listens on PORT.
+// On Vercel the file is loaded and `app` is handed each request instead (module.exports below).
+module.exports = app;
+
+if (require.main === module) {
+  ready.then(() => {
+    app.listen(config.PORT, () => {
+      console.log(`HiddenTimes running → ${config.SITE_URL}`);
+      console.log(`Admin page          → ${config.SITE_URL}/admin`);
+      console.log(`Stories stored in   → ${store.kind}${store.kind === 'local file' ? ' (set DATABASE_URL for the live site)' : ''}`);
+      console.log(`Images stored in    → ${media.kind}${media.kind === 'local folder' ? ' (set S3_* for the live site)' : ''}`);
+    });
+  }, (e) => {
     console.error('Could not connect to the database:', e.message);
     process.exit(1);
-  }
-  app.listen(config.PORT, () => {
-    console.log(`HiddenTimes running → ${config.SITE_URL}`);
-    console.log(`Admin page          → ${config.SITE_URL}/admin`);
-    console.log(`Stories stored in   → ${store.kind}${store.kind === 'local file' ? ' (set DATABASE_URL for the live site)' : ''}`);
-    console.log(`Images stored in    → ${media.kind}${media.kind === 'local folder' ? ' (set S3_* for the live site)' : ''}`);
   });
-})();
+}
