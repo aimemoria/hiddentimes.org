@@ -1,0 +1,20 @@
+{
+  "name": "@hiddentimes/logo",
+  "version": "1.0.0",
+  "description": "The HiddenTimes logo as code: SVG builder, <ht-logo> web component with themes and animations, and ready-made SVG files.",
+  "type": "module",
+  "main": "index.js",
+  "exports": {
+    ".": "./index.js",
+    "./element": "./src/element.js",
+    "./render": "./src/render.js",
+    "./shapes": "./src/shapes.js",
+    "./dist/*": "./dist/*"
+  },
+  "files": ["index.js", "src", "dist", "README.md"],
+  "scripts": {
+    "build": "node scripts/build.js"
+  },
+  "license": "UNLICENSED",
+  "private": true
+}

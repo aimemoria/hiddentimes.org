@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Logo Kit | HiddenTimes</title>
+  <link rel="icon" href="dist/mark-light.svg" type="image/svg+xml">
+  <style>
+    :root { --ink: #0c0c0d; --muted: #77777c; --line: #e7e7e5; --soft: #f5f5f3; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #fff; color: var(--ink); font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+    .wrap { max-width: 1100px; margin: 0 auto; padding: 40px 16px 80px; }
+    h1 { font-size: 22px; margin: 0 0 4px; letter-spacing: -.01em; }
+    .sub { color: var(--muted); margin: 0 0 32px; }
+    h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .12em; color: var(--muted); margin: 48px 0 14px; font-weight: 600; }
+
+    .stage { border: 1px solid var(--line); border-radius: 14px; padding: 56px 24px; display: grid; place-items: center; min-height: 260px; }
+    .stage ht-logo { height: 120px; max-width: 100%; }
+    .controls { display: flex; flex-wrap: wrap; gap: 18px 28px; margin-top: 18px; align-items: end; }
+    .controls label { display: grid; gap: 6px; font-size: 13px; color: var(--muted); }
+    select, button { font: inherit; padding: 8px 12px; border: 1px solid #d8d8d4; border-radius: 8px; background: #fff; color: var(--ink); }
+    button { cursor: pointer; background: var(--ink); color: #fff; border-color: var(--ink); }
+    .swatches { display: flex; gap: 8px; }
+    .swatches button { width: 30px; height: 30px; padding: 0; border-radius: 50%; border: 1px solid #ccc; }
+    .swatches button[aria-pressed="true"] { outline: 2px solid var(--ink); outline-offset: 2px; }
+
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
+    .tile { border-radius: 12px; padding: 34px 20px; display: grid; place-items: center; border: 1px solid var(--line); min-height: 130px; }
+    .tile ht-logo { height: 46px; }
+    .tile.mark ht-logo { height: 72px; }
+    .cap { font-size: 12px; color: var(--muted); margin-top: 8px; }
+
+    pre { background: var(--soft); border-radius: 10px; padding: 16px; overflow-x: auto; font-size: 13px; line-height: 1.6; margin: 0; }
+    code { font-family: ui-monospace, "Cascadia Code", Consolas, monospace; }
+
+    .custom ht-logo { --ht-ink: #0b1056; --ht-mark-bg: #0b1056; --ht-mark-fg: #F2A603; }
+    .custom-anim ht-logo::part(letter) { animation: wave 1.6s calc(var(--i) * 90ms) ease-in-out infinite; transform-box: fill-box; }
+    @keyframes wave { 50% { transform: translateY(-10%); } }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>HiddenTimes logo kit</h1>
+    <p class="sub">The logo is drawn entirely in code. Change the settings below; everything updates live.</p>
+
+    <div class="stage" id="stage">
+      <ht-logo id="hero" animate="draw hover" theme="auto"></ht-logo>
+    </div>
+
+    <div class="controls">
+      <label>Layout
+        <select id="variant"><option value="full">Full</option><option value="mark">Badge only</option><option value="wordmark">Wordmark only</option></select>
+      </label>
+      <label>Tagline
+        <select id="tagline"><option value="true">Show</option><option value="false">Hide</option></select>
+      </label>
+      <label>Colours
+        <select id="theme"><option value="auto">Auto (match background)</option><option value="light">Light</option><option value="dark">Dark</option><option value="mono">One colour</option></select>
+      </label>
+      <label>Animation
+        <select id="animate">
+          <option value="draw hover">Draw + hover</option><option value="draw">Draw</option><option value="reveal">Reveal</option>
+          <option value="hover">Hover only</option><option value="loop">Loop (loading)</option><option value="">None</option>
+        </select>
+      </label>
+      <label>Background
+        <div class="swatches" id="bgs">
+          <button style="background:#fff" data-bg="#ffffff" aria-pressed="true" title="White"></button>
+          <button style="background:#f5f5f3" data-bg="#f5f5f3" title="Paper"></button>
+          <button style="background:#0c0c0d" data-bg="#0c0c0d" title="Black"></button>
+          <button style="background:#0b1056" data-bg="#0b1056" title="Navy"></button>
+          <button style="background:#F2A603" data-bg="#F2A603" title="Yellow"></button>
+        </div>
+      </label>
+      <button id="replay" type="button">Replay</button>
+    </div>
+
+    <h2>Every version</h2>
+    <div class="grid">
+      <div><div class="tile"><ht-logo theme="light"></ht-logo></div><div class="cap">theme="light"</div></div>
+      <div><div class="tile" style="background:#0c0c0d"><ht-logo theme="dark"></ht-logo></div><div class="cap">theme="dark"</div></div>
+      <div><div class="tile" style="background:#0b1056"><ht-logo theme="auto"></ht-logo></div><div class="cap">theme="auto" on navy</div></div>
+      <div><div class="tile" style="background:#F2A603;color:#0c0c0d"><ht-logo theme="mono"></ht-logo></div><div class="cap">theme="mono" (uses the text colour)</div></div>
+      <div><div class="tile"><ht-logo tagline="false"></ht-logo></div><div class="cap">tagline="false"</div></div>
+      <div><div class="tile"><ht-logo variant="wordmark"></ht-logo></div><div class="cap">variant="wordmark"</div></div>
+      <div><div class="tile mark"><ht-logo variant="mark"></ht-logo></div><div class="cap">variant="mark"</div></div>
+      <div><div class="tile mark" style="background:#0c0c0d"><ht-logo variant="mark" theme="dark" animate="loop"></ht-logo></div><div class="cap">animate="loop"</div></div>
+    </div>
+
+    <h2>Your own colours and motion</h2>
+    <div class="grid">
+      <div class="custom"><div class="tile"><ht-logo></ht-logo></div><div class="cap">CSS variables: navy + yellow badge</div></div>
+      <div class="custom-anim"><div class="tile"><ht-logo tagline="false"></ht-logo></div><div class="cap">::part(letter): custom wave</div></div>
+    </div>
+
+    <h2>Use it</h2>
+<pre><code>&lt;script type="module" src="/logo-kit/src/element.js"&gt;&lt;/script&gt;
+
+&lt;ht-logo theme="auto" animate="draw hover"&gt;&lt;/ht-logo&gt;
+
+&lt;style&gt;
+  ht-logo { height: 48px; }                       /* size */
+  ht-logo { --ht-ink: #0b1056; }                  /* recolour any part */
+  ht-logo::part(symbol) { stroke-width: 30; }     /* style or animate any part */
+&lt;/style&gt;</code></pre>
+  </div>
+
+  <script type="module">
+    import './src/element.js';
+    const hero = document.getElementById('hero');
+    const stage = document.getElementById('stage');
+    for (const id of ['variant', 'tagline', 'theme', 'animate']) {
+      document.getElementById(id).addEventListener('change', (e) => {
+        hero.setAttribute(id, e.target.value);
+        if (id === 'animate' || id === 'variant') hero.replay();
+      });
+    }
+    document.getElementById('replay').addEventListener('click', () => hero.replay());
+    document.getElementById('bgs').addEventListener('click', (e) => {
+      const b = e.target.closest('button[data-bg]'); if (!b) return;
+      document.querySelectorAll('#bgs button').forEach((x) => x.setAttribute('aria-pressed', x === b));
+      stage.style.background = b.dataset.bg;
+      hero.refresh();
+    });
+  </script>
+</body>
+</html>

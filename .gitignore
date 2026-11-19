@@ -1,0 +1,12 @@
+node_modules/
+.env
+.env.*
+!.env.example
+certs/
+# local development storage (the live site uses the database and online storage)
+data/
+uploads/
+*.log
+
+# private notes and passwords
+private/

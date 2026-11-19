@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Admin | HiddenTimes</title>
+  <link rel="icon" href="/logo-kit/dist/mark-light.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/logo-kit/dist/mark-light-256.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/css/style.css">
+  <script type="module" src="/logo-kit/src/element.js"></script>
+  <link rel="stylesheet" href="/assets/css/admin.css">
+</head>
+<body class="admin">
+
+  <!-- sign in -->
+  <section id="login" class="login" hidden>
+    <form class="login-box" id="loginForm">
+      <ht-logo theme="auto" tagline="false"><img src="/logo-kit/dist/logo-light-no-tagline.svg" alt="HiddenTimes"></ht-logo>
+      <p class="kicker">Editor sign in</p>
+      <label class="field">
+        <span>Password</span>
+        <input type="password" name="password" autocomplete="current-password" required autofocus>
+      </label>
+      <p class="form-error" id="loginError" role="alert"></p>
+      <button class="btn" type="submit" style="width:100%;justify-content:center">Sign in</button>
+    </form>
+  </section>
+
+  <!-- dashboard -->
+  <div id="dash" hidden>
+    <header class="site-header is-scrolled" data-static>
+      <div class="wrap">
+        <a class="logo" href="/admin"><ht-logo theme="auto" tagline="false"><img src="/logo-kit/dist/logo-light-no-tagline.svg" alt="HiddenTimes"></ht-logo></a>
+        <nav class="nav admin-nav" aria-label="Admin sections">
+          <a href="#stories" data-view="stories" class="is-active" aria-current="page">Stories</a>
+          <a href="#analytics" data-view="analytics">Analytics</a>
+          <a href="#account" data-view="account">Account</a>
+        </nav>
+        <div class="nav admin-actions">
+          <a href="/" target="_blank" rel="noopener">View site</a>
+          <button type="button" id="logout">Sign out</button>
+        </div>
+      </div>
+    </header>
+
+    <main class="wrap admin-grid" id="view-stories">
+      <section>
+        <div class="panel-head">
+          <h1 id="formTitle">New story</h1>
+          <button type="button" class="linklike" id="resetForm" hidden>Cancel editing</button>
+        </div>
+
+        <form id="storyForm" class="story-form" novalidate>
+          <label class="field">
+            <span>Title</span>
+            <input name="title" maxlength="160" required placeholder="The house at the end of the road">
+          </label>
+
+          <div class="row">
+            <label class="field">
+              <span>Section</span>
+              <input name="category" list="catList" maxlength="40" placeholder="e.g. History, Mystery, Interviews">
+              <datalist id="catList"></datalist>
+            </label>
+            <label class="field">
+              <span>Author <em>optional</em></span>
+              <input name="author" maxlength="80">
+            </label>
+          </div>
+
+          <label class="field">
+            <span>Short summary <em>optional, shown on the card and under the title</em></span>
+            <textarea name="excerpt" rows="2" maxlength="300"></textarea>
+          </label>
+
+          <div class="field">
+            <div class="editor-head">
+              <span id="bodyLabel">Story <em>Markdown supported</em></span>
+              <div class="editor-tools">
+                <div class="seg" role="tablist" aria-label="Story editor">
+                  <button type="button" role="tab" class="is-on" id="tabWrite" aria-selected="true">Write</button>
+                  <button type="button" role="tab" id="tabPreview" aria-selected="false">Preview</button>
+                </div>
+                <label class="linklike import">
+                  Import .md file
+                  <input type="file" id="mdFile" accept=".md,.markdown,.txt,text/markdown,text/plain" hidden>
+                </label>
+              </div>
+            </div>
+            <textarea name="body" rows="18" class="body-input" aria-labelledby="bodyLabel" placeholder="Write, paste or import the story here."></textarea>
+            <div class="md-preview prose" id="mdPreview" hidden></div>
+            <details class="md-help">
+              <summary>Markdown cheat sheet</summary>
+              <table>
+                <tr><td><code>## Heading</code></td><td>subheading</td></tr>
+                <tr><td><code>**bold**</code> &nbsp; <code>*italic*</code></td><td><strong>bold</strong> &nbsp; <em>italic</em></td></tr>
+                <tr><td><code>[text](https://…)</code></td><td>link</td></tr>
+                <tr><td><code>- item</code> &nbsp; <code>1. item</code></td><td>bullet / numbered list</td></tr>
+                <tr><td><code>&gt; quote</code></td><td>pull quote</td></tr>
+                <tr><td><code>![caption](https://…/photo.jpg)</code></td><td>image</td></tr>
+                <tr><td><code>---</code></td><td>section break</td></tr>
+              </table>
+              <p>Leave an empty line between paragraphs.</p>
+            </details>
+          </div>
+
+          <label class="field">
+            <span>YouTube or other link <em>optional</em></span>
+            <input name="link" type="url" inputmode="url" placeholder="https://youtube.com/watch?v=…">
+            <small class="hint" id="linkHint">A YouTube link adds a podcast player to the story.</small>
+          </label>
+
+          <div class="field">
+            <span>Resources <em>optional. Sources, further reading, documents</em></span>
+            <ul class="res-rows" id="resRows"></ul>
+            <button type="button" class="btn btn--ghost btn--sm" id="addRes">+ Add resource</button>
+          </div>
+
+          <div class="field">
+            <span>Cover image <em>optional. Without one, a YouTube link uses its thumbnail</em></span>
+            <div class="cover-pick">
+              <div class="cover-preview" id="coverPreview"><span>No image</span></div>
+              <div class="cover-controls">
+                <label class="btn btn--ghost btn--sm">
+                  Upload image
+                  <input type="file" name="coverFile" accept="image/jpeg,image/png,image/webp,image/gif" hidden>
+                </label>
+                <small class="hint" id="coverInfo" aria-live="polite"></small>
+                <input name="coverUrl" type="url" placeholder="…or paste an image URL">
+                <input name="coverAlt" maxlength="200" placeholder="Describe the image, e.g. Steam train crossing a bridge at night" aria-label="Image description">
+                <small class="hint">The description helps Google Images and people using screen readers.</small>
+                <button type="button" class="linklike" id="removeCover" hidden>Remove image</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="row checks">
+            <label class="check"><input type="checkbox" name="featured"> <span>Feature on top of home page</span></label>
+            <label class="check"><input type="checkbox" name="published" checked> <span>Published</span></label>
+          </div>
+
+          <p class="form-error" id="formError" role="alert"></p>
+
+          <div class="form-foot">
+            <button class="btn" type="submit" id="submitBtn">Publish story</button>
+            <span class="saved" id="saved" aria-live="polite"></span>
+          </div>
+        </form>
+      </section>
+
+      <aside>
+        <div class="panel-head">
+          <h2>All stories <span id="count"></span></h2>
+        </div>
+        <input type="search" id="filter" class="filter" placeholder="Search stories">
+        <ul class="story-list" id="list"></ul>
+      </aside>
+    </main>
+
+    <!-- analytics -->
+    <main class="wrap analytics" id="view-analytics" hidden>
+      <div class="an-head">
+        <div>
+          <h1>Analytics</h1>
+          <p class="an-sub">Anonymous: no cookies and no IP addresses. Your own visits while signed in aren't counted.</p>
+        </div>
+        <div class="seg an-range" role="group" aria-label="Time range">
+          <button type="button" data-days="7">7 days</button>
+          <button type="button" data-days="30" class="is-on">30 days</button>
+          <button type="button" data-days="90">90 days</button>
+          <button type="button" data-days="365">1 year</button>
+        </div>
+      </div>
+      <div id="an-body"><p class="an-loading">Loading…</p></div>
+    </main>
+
+    <!-- account -->
+    <main class="wrap account" id="view-account" hidden>
+      <div class="an-head">
+        <div>
+          <h1>Account</h1>
+          <p class="an-sub" id="acc-status">&nbsp;</p>
+        </div>
+      </div>
+      <section class="an-card acc-card">
+        <h2>Change password</h2>
+        <p class="an-note">Use at least 12 characters. A short sentence you'll remember works well. Changing it signs out every other device.</p>
+        <form id="pwForm" class="acc-form" novalidate>
+          <input type="text" name="username" value="admin" autocomplete="username" hidden>
+          <label class="field"><span>Current password</span>
+            <input type="password" name="current" autocomplete="current-password" required></label>
+          <label class="field"><span>New password</span>
+            <input type="password" name="next" autocomplete="new-password" minlength="12" required></label>
+          <label class="field"><span>Repeat new password</span>
+            <input type="password" name="confirm" autocomplete="new-password" minlength="12" required></label>
+          <p class="form-error" id="pwError" role="alert"></p>
+          <div class="form-foot">
+            <button class="btn" type="submit" id="pwSubmit">Update password</button>
+            <span class="saved" id="pwSaved" aria-live="polite"></span>
+          </div>
+        </form>
+      </section>
+    </main>
+  </div>
+
+  <script src="/vendor/marked.min.js"></script>
+  <script src="/vendor/purify.min.js"></script>
+  <script src="/assets/js/common.js"></script>
+  <script src="/assets/js/admin.js"></script>
+  <script src="/assets/js/admin-views.js"></script>
+  <script src="/assets/js/admin-analytics.js"></script>
+  <script src="/assets/js/admin-account.js"></script>
+</body>
+</html>

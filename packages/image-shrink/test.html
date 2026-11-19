@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>image-shrink test</title>
+<style>body{font:14px/1.5 system-ui;margin:24px}pre{background:#f5f5f3;padding:12px;border-radius:8px}</style></head>
+<body>
+<h1>image-shrink self-test</h1>
+<p>Open at <code>/image-kit/test.html</code>. Results appear below.</p>
+<pre id="out">running…</pre>
+<script type="module">
+import { shrinkImage, formatBytes } from './src/index.js';
+const out = document.getElementById('out');
+const lines = [];
+const log = (s) => { lines.push(s); out.textContent = lines.join('\n'); };
+
+// a photo-like test image: gradients + fine noise (noise makes files big, like real photos)
+function photo(w, h, alpha = false) {
+  const c = document.createElement('canvas'); c.width = w; c.height = h;
+  const x = c.getContext('2d');
+  const g = x.createLinearGradient(0, 0, w, h); g.addColorStop(0, '#2a4d69'); g.addColorStop(.5, '#e0a040'); g.addColorStop(1, '#3b1f1f');
+  x.fillStyle = g; x.fillRect(0, 0, w, h);
+  const img = x.getImageData(0, 0, w, h), d = img.data;
+  let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  for (let i = 0; i < d.length; i += 4) { const n = (rnd() - .5) * 60; d[i] += n; d[i+1] += n; d[i+2] += n; if (alpha && (i / 4) % w < w / 4) d[i+3] = 0; }
+  x.putImageData(img, 0, 0);
+  return c;
+}
+const toFile = (c, type, q, name) => new Promise((r) => c.toBlob((b) => r(new File([b], name, { type })), type, q));
+
+const cases = [
+  ['big phone photo 6000×4000 JPEG', () => toFile(photo(6000, 4000), 'image/jpeg', 0.97, 'IMG_0001.jpg'), (r) => r.changed && r.size <= 3.5*1024*1024 && Math.max(r.width, r.height) <= 2400],
+  ['small photo 1200×800 JPEG', () => toFile(photo(1200, 800), 'image/jpeg', 0.85, 'small.jpg'), (r) => !r.changed],
+  ['transparent PNG 3000×2000', () => toFile(photo(3000, 2000, true), 'image/png', 1, 'logo.png'), (r) => r.changed && r.type !== 'image/jpeg'],
+  ['tight limit 300 KB', () => toFile(photo(4000, 3000), 'image/jpeg', 0.95, 'tight.jpg'), (r) => r.size <= 300*1024, { maxBytes: 300 * 1024 }],
+];
+
+let pass = 0;
+for (const [label, make, check, opts] of cases) {
+  const f = await make();
+  const t = performance.now();
+  const r = await shrinkImage(f, opts);
+  const ok = check(r);
+  if (ok) pass++;
+  log(`${ok ? 'PASS' : 'FAIL'}  ${label}: ${formatBytes(r.originalSize)} → ${formatBytes(r.size)}, ${r.width}×${r.height}, ${r.type}, q=${r.quality ?? 'untouched'}, ${Math.round(performance.now() - t)} ms`);
+}
+try { await shrinkImage(new File(['hello'], 'notes.txt', { type: 'text/plain' })); log('FAIL  rejects non-images'); }
+catch (e) { pass++; log('PASS  rejects non-images: "' + e.message + '"'); }
+log(`\nRESULT ${pass}/${cases.length + 1} passed`);
+</script>
+</body>
+</html>

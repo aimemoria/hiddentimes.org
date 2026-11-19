@@ -1,0 +1,11 @@
+{
+  "name": "@hiddentimes/image-shrink",
+  "version": "1.0.0",
+  "description": "Shrinks photos in the browser before upload: resizes only as much as needed, keeps visual quality, fixes rotation, strips location data.",
+  "type": "module",
+  "main": "src/index.js",
+  "exports": { ".": "./src/index.js" },
+  "files": ["src", "README.md"],
+  "license": "UNLICENSED",
+  "private": true
+}
