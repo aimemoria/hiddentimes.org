@@ -10,3 +10,6 @@ uploads/
 
 # private notes and passwords
 private/
+
+# Claude Code personal settings
+.claude/settings.local.json
