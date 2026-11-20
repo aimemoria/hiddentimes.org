@@ -1,7 +1,7 @@
 # Publishing with ChatGPT Work (agent publishing page)
 
 **Address:** `https://<your site>/admin/agent-publish`
-For now: `https://hiddentimes-org.vercel.app/admin/agent-publish`. Later: `https://www.hiddentimes.org/admin/agent-publish`.
+For now: `https://hiddentimes.vercel.app/admin/agent-publish`. Later: `https://www.hiddentimes.org/admin/agent-publish`.
 
 This is one plain page, built so a browser agent can use it easily. It signs in with the normal admin password, and it publishes through the same server code as the admin dashboard. No AI service or API is connected to the website.
 
@@ -60,7 +60,7 @@ unusual crimes, scientific discoveries, unexplained phenomena and remarkable eve
 
 Every day, research, write and publish ONE new story.
 
-1. Open https://hiddentimes-org.vercel.app/admin/agent-publish
+1. Open https://hiddentimes.vercel.app/admin/agent-publish
    If a sign-in form appears, ask me to sign in (do not guess or store the password).
 2. Scroll to "All stories". Choose a topic that is NOT already covered there (check for the same event,
    person or case, not only the same title).
