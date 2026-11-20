@@ -340,7 +340,8 @@ ht-logo > img { height: 100%; width: auto; }   /* fallback before the coded logo
 
 /* ---------- story page ---------- */
 
-.article { padding: 56px 0 40px; }
+/* same side margin as the rest of the site (32px, 20px on phones) so text never touches the edge */
+.article { padding: 56px var(--gutter) 40px; }
 .article-head { max-width: 760px; margin: 0 auto; text-align: center; }
 .article-head h1 {
   font-family: var(--serif);
@@ -515,7 +516,7 @@ ht-logo > img { height: 100%; width: auto; }   /* fallback before the coded logo
   .hero p { font-size: 17px; }
   .shelf { padding: 44px 0 28px; }
   .prose { font-size: 18px; }
-  .article { padding-top: 32px; }
+  .article { padding: 32px 20px 40px; }
 }
 
 @media (max-width: 560px) {
