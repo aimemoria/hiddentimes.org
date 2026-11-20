@@ -69,6 +69,15 @@ CREATE TABLE IF NOT EXISTS page_views (
 CREATE INDEX IF NOT EXISTS page_views_started_idx ON page_views (started_at);
 CREATE INDEX IF NOT EXISTS page_views_story_idx ON page_views (story_id, started_at);
 
+-- Cover image credit, shown under the cover (e.g. "Photo: Jane Doe, CC BY-SA 4.0, via Wikimedia Commons").
+-- Licences such as CC BY require this attribution.
+ALTER TABLE stories ADD COLUMN IF NOT EXISTS cover_credit text NOT NULL DEFAULT '';
+
+-- One code per submission from the publishing page. If the same submission arrives twice
+-- (double click, retry after a lost connection), the second one returns the first story instead of a copy.
+ALTER TABLE stories ADD COLUMN IF NOT EXISTS submission_id uuid;
+CREATE UNIQUE INDEX IF NOT EXISTS stories_submission_idx ON stories (submission_id);
+
 -- Site settings, e.g. the admin password (stored only as a scrypt hash, never readable).
 CREATE TABLE IF NOT EXISTS settings (
   key         text PRIMARY KEY,

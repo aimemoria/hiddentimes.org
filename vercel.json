@@ -2,11 +2,12 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "buildCommand": "npm run build",
   "rewrites": [
-    { "source": "/admin", "destination": "/admin.html" }
+    { "source": "/admin", "destination": "/admin.html" },
+    { "source": "/admin/agent-publish", "destination": "/agent-publish.html" }
   ],
   "headers": [
     {
-      "source": "/admin.html",
+      "source": "/(admin|agent-publish).html",
       "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow" }]
     },
     {

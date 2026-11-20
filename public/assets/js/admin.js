@@ -253,6 +253,7 @@
     form.link.value = s.link || '';
     form.coverUrl.value = s.cover && !s.coverKey ? s.cover : ''; // uploaded images are shown in the preview, not as a URL
     form.coverAlt.value = s.coverAlt || '';
+    form.coverCredit.value = s.coverCredit || '';
     form.featured.checked = Boolean(s.featured);
     form.published.checked = s.published !== false;
     setResources(s.resources);

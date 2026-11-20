@@ -141,6 +141,10 @@ Built in:
 2. Add the site to **Google Search Console** and **Bing Webmaster Tools**, and submit `https://<your-domain>/sitemap.xml` in each.
 3. Test a story at **search.google.com/test/rich-results**, and share a link in WhatsApp to see the preview.
 
+## Publishing with ChatGPT Work
+
+A simple publishing page for browser agents lives at **`/admin/agent-publish`**. It uses the same sign-in, checks and storage as the dashboard. The full guide, and a ready-to-use daily instruction for ChatGPT Work, are in [docs/agent-publishing.md](docs/agent-publishing.md).
+
 ## Hosting on Vercel (free)
 
 The site runs on Vercel's free **Hobby** plan, connected to the GitHub repo `aimemoria/hiddentimes.org`. Every `git push` to `main` puts the new version online by itself, in about a minute.

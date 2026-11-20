@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Publish a story | HiddenTimes</title>
+  <link rel="icon" href="/logo-kit/dist/mark-light.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/css/style.css">
+  <link rel="stylesheet" href="/assets/css/admin.css">
+</head>
+<!--
+  HiddenTimes publishing page, made to be simple for people and for browser agents.
+  One page, ordinary form fields, stable ids, no drag and drop, no hidden menus.
+  Every result is written into #result with data-status="success" or data-status="error".
+-->
+<body class="admin agent-page">
+
+  <!-- ========== 1. Sign in ========== -->
+  <section id="login-section" class="login" hidden aria-labelledby="login-heading">
+    <form class="login-box" id="login-form">
+      <h1 id="login-heading" class="agent-login-title">HiddenTimes: sign in to publish</h1>
+      <label class="field" for="password">
+        <span>Password</span>
+        <input type="password" id="password" name="password" autocomplete="current-password" required>
+      </label>
+      <p class="form-error" id="login-error" role="alert"></p>
+      <button class="btn" type="submit" id="sign-in-button" style="width:100%;justify-content:center">Sign in</button>
+    </form>
+  </section>
+
+  <!-- ========== 2. Publishing page ========== -->
+  <div id="publish-section" hidden>
+    <header class="agent-bar">
+      <div class="wrap agent-bar-in">
+        <strong>HiddenTimes · Publish a story</strong>
+        <span class="agent-bar-links">
+          <a href="/admin">Admin dashboard</a>
+          <a href="/" target="_blank" rel="noopener">View site</a>
+          <button type="button" id="sign-out-button" class="linklike">Sign out</button>
+        </span>
+      </div>
+    </header>
+
+    <main class="wrap agent-main">
+
+      <section aria-labelledby="form-heading">
+        <h1 id="form-heading">Publish a story</h1>
+
+        <details class="agent-rules" open>
+          <summary>Before publishing, check:</summary>
+          <ul>
+            <li>The topic is not already in <a href="#history-heading">the list of stories</a> below.</li>
+            <li>Every fact comes from a credible source, and the sources are listed.</li>
+            <li>Documented facts are kept apart from theories and speculation.</li>
+            <li>No invented quotations or details.</li>
+            <li>The cover image may legally be reused (public domain, Creative Commons, or your own illustration), and its credit is filled in.</li>
+          </ul>
+          <p class="hint">A published story needs: a title (10+ characters), a category, a short description (40 to 300 characters), at least 300 words, at least one source, a cover image with a description and a credit. A draft only needs a title and some text.</p>
+        </details>
+
+        <div id="restore-notice" class="agent-notice" role="status" hidden>
+          <span id="restore-text">Unsaved work from earlier was restored into the form.</span>
+          <button type="button" class="linklike" id="discard-restored-button">Start with an empty form instead</button>
+        </div>
+
+        <p id="editing-notice" class="agent-notice" hidden>
+          <span id="editing-text"></span>
+          <button type="button" class="linklike" id="new-story-button">Start a new story instead</button>
+        </p>
+
+        <form id="story-form" novalidate>
+          <input type="hidden" id="story-id" name="storyId" value="">
+          <input type="hidden" id="submission-id" name="submissionId" value="">
+          <!-- kept as they are when continuing a draft made on the admin dashboard -->
+          <input type="hidden" id="keep-author" name="author" value="">
+          <input type="hidden" id="keep-link" name="link" value="">
+          <input type="hidden" id="keep-featured" name="featured" value="false">
+
+          <label class="field" for="title">
+            <span>Story title</span>
+            <input id="title" name="title" maxlength="160" required>
+          </label>
+
+          <label class="field" for="category">
+            <span>Category</span>
+            <select id="category" name="category" required>
+              <option value="">Choose a category</option>
+            </select>
+          </label>
+
+          <label class="field" for="excerpt">
+            <span>Short description <em>40 to 300 characters. Shown on the story card and under the title</em></span>
+            <textarea id="excerpt" name="excerpt" rows="3" maxlength="300" required></textarea>
+            <small class="hint" id="excerpt-count" aria-live="polite">0 / 300</small>
+          </label>
+
+          <label class="field" for="body">
+            <span>Story content <em>Markdown. Use ## for chapter headings and an empty line between paragraphs</em></span>
+            <textarea id="body" name="body" rows="22" class="body-input" required></textarea>
+            <small class="hint" id="body-count" aria-live="polite">0 words</small>
+          </label>
+
+          <label class="field" for="sources">
+            <span>Source references <em>one per line, written as: Title | https://link</em></span>
+            <textarea id="sources" name="sources" rows="5" placeholder="Hannibal's victory at Cannae | https://www.britannica.com/event/Battle-of-Cannae"></textarea>
+            <small class="hint" id="sources-count" aria-live="polite">0 sources</small>
+          </label>
+
+          <fieldset class="field agent-cover">
+            <legend>Cover image</legend>
+            <p class="hint" id="current-cover" hidden></p>
+            <label class="field" for="cover-url">
+              <span>Image address <em>https:// link to a JPG, PNG or WebP image. A copy is saved on HiddenTimes</em></span>
+              <input id="cover-url" name="coverUrl" type="url" inputmode="url" placeholder="https://upload.wikimedia.org/…/1600px-photo.jpg">
+            </label>
+            <label class="field" for="cover-file">
+              <span>…or upload an image file <em>large photos are made smaller automatically</em></span>
+              <input id="cover-file" type="file" accept="image/jpeg,image/png,image/webp,image/gif">
+              <small class="hint" id="cover-file-info" aria-live="polite"></small>
+            </label>
+            <label class="field" for="cover-alt">
+              <span>Image description <em>what the image shows, for search engines and screen readers</em></span>
+              <input id="cover-alt" name="coverAlt" maxlength="200">
+            </label>
+            <label class="field" for="cover-credit">
+              <span>Image credit <em>creator, licence and source, e.g. "Photo: Jane Doe, CC BY-SA 4.0, via Wikimedia Commons" or "Original illustration"</em></span>
+              <input id="cover-credit" name="coverCredit" maxlength="300">
+            </label>
+          </fieldset>
+
+          <div class="form-foot agent-actions">
+            <button class="btn" type="submit" id="publish-button" data-action="publish">Publish story</button>
+            <button class="btn btn--ghost" type="submit" id="save-draft-button" data-action="draft">Save as draft</button>
+          </div>
+        </form>
+
+        <!-- The outcome of every action. data-status: idle | working | success | error -->
+        <section id="result" class="agent-result" data-status="idle" role="status" aria-live="polite" aria-labelledby="result-heading" hidden>
+          <h2 id="result-heading">Result</h2>
+          <p id="result-message"></p>
+          <ul id="result-problems"></ul>
+          <p id="result-link-line" hidden>Public address: <a id="result-url" href="#" target="_blank" rel="noopener"></a></p>
+          <p id="result-check" data-verified="unknown"></p>
+        </section>
+      </section>
+
+      <section aria-labelledby="history-heading" class="agent-history">
+        <h2 id="history-heading">All stories <span id="history-count"></span></h2>
+        <p class="hint">Newest first. Check this list so a topic is never published twice. Drafts can be continued.</p>
+        <table id="history-table">
+          <thead><tr><th scope="col">Date</th><th scope="col">Title</th><th scope="col">Category</th><th scope="col">Status</th><th scope="col">Action</th></tr></thead>
+          <tbody id="history-body"><tr><td colspan="5">Loading…</td></tr></tbody>
+        </table>
+      </section>
+    </main>
+  </div>
+
+  <script src="/assets/js/agent-publish.js"></script>
+</body>
+</html>

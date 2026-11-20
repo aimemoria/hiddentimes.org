@@ -370,6 +370,10 @@ ht-logo > img { height: 100%; width: auto; }   /* fallback before the coded logo
   background: var(--soft);
 }
 .article-cover img { width: 100%; height: 100%; object-fit: cover; }
+/* with a credit line, the figure holds the image (16:9) plus a caption below it */
+.article-cover.has-credit { aspect-ratio: auto; overflow: visible; background: none; border-radius: 0; }
+.article-cover.has-credit img { aspect-ratio: 16 / 9; height: auto; border-radius: var(--radius); background: var(--soft); }
+.cover-credit { margin-top: 8px; font-size: 12px; line-height: 1.4; color: var(--muted); text-align: right; }
 
 .listen {
   max-width: 760px;

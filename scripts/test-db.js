@@ -74,6 +74,18 @@ const { createPostgresStore } = require('../lib/store/postgres');
   const rm = await store.insert({ ...a, id: '33333333-3333-4333-8333-333333333333', slug: 'third', readMinutes: 7, resources: [] });
   assert.equal(rm.readMinutes, 7);
 
+  // publishing page: image credit is saved; one submission code can only ever create one story
+  const sub = '55555555-5555-4555-8555-555555555555';
+  const ag = await store.insert({ ...a, id: '66666666-6666-4666-8666-666666666666', slug: 'agent', coverCredit: 'Photo: Jane Doe, CC BY 4.0', submissionId: sub, resources: [] });
+  assert.equal(ag.coverCredit, 'Photo: Jane Doe, CC BY 4.0');
+  assert.equal((await store.findBySubmission(sub)).id, ag.id);
+  await assert.rejects(store.insert({ ...a, id: '77777777-7777-4777-8777-777777777777', slug: 'agent-2', submissionId: sub, resources: [] }),
+    (e) => e.code === '23505', 'the same submission is refused a second time');
+  const agEdit = await store.update({ ...ag, coverCredit: 'Original illustration', submissionId: null, updatedAt: iso(20) });
+  assert.equal(agEdit.coverCredit, 'Original illustration');
+  assert.equal(agEdit.submissionId, sub, 'an edit never changes the submission code');
+  assert.equal(await store.findBySubmission('88888888-8888-4888-8888-888888888888'), null);
+
   // analytics: record a visit, update it, read it back; only the same visitor code may update
   const vid = '44444444-4444-4444-8444-444444444444';
   await store.recordView({ id: vid, visitor: 'abc', path: '/story/third', storyId: rm.id, country: 'RW', region: 'Kigali', city: 'Kigali', referrer: 'google.com', device: 'mobile' });
@@ -102,6 +114,6 @@ const { createPostgresStore } = require('../lib/store/postgres');
   await store.deleteSetting('admin_password_hash');
   assert.equal(await store.getSetting('admin_password_hash'), null);
 
-  console.log('Database tests passed ✓ (schema, insert, lists, drafts, slugs, update, resources, delete, media, read time, analytics, settings, password hashing)');
+  console.log('Database tests passed ✓ (schema, insert, lists, drafts, slugs, update, resources, delete, media, read time, image credit, one story per submission, analytics, settings, password hashing)');
   await pg.close();
 })().catch((e) => { console.error('Database test FAILED:', e); process.exit(1); });

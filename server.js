@@ -16,6 +16,8 @@ const views = require('./lib/views');
 const seo = require('./lib/seo');
 const analytics = require('./lib/analytics');
 const { hashPassword, verifyPassword } = require('./lib/passwords');
+const { sameTitle, agentProblems } = require('./lib/publish-rules');
+const { fetchImage } = require('./lib/fetch-image');
 const {
   clean, slugify, safeUrl, youtubeId, makeExcerpt, readResources, sniffImage, newId, randomSuffix, readMinutes,
 } = require('./lib/util');
@@ -116,6 +118,43 @@ async function storeCover(req) {
   return media.put({ buffer: req.file.buffer, ext: kind.ext, contentType: kind.type });
 }
 
+// Download an image from a web address and save a copy in our storage (agent publishing page).
+async function storeCoverFromUrl(url) {
+  const buffer = await fetchImage(url, { maxBytes: config.MAX_FETCHED_IMAGE_BYTES, siteUrl: config.SITE_URL });
+  const kind = sniffImage(buffer);
+  if (!kind) { const e = new Error('The image address did not return a JPG, PNG, WebP or GIF image.'); e.status = 400; throw e; }
+  return media.put({ buffer, ext: kind.ext, contentType: kind.type });
+}
+
+// ---------- shared publishing checks (admin dashboard + agent publishing page) ----------
+const isAgent = (req) => req.body.mode === 'agent';
+const submissionIdOf = (req) => {
+  const v = String(req.body.submissionId || '').toLowerCase();
+  return analytics.UUID.test(v) ? v : null;
+};
+const withUrl = (s) => ({ ...s, url: config.SITE_URL + views.storyPath(s) });
+const reject = (res, status, error, extra = {}) => res.status(status).json({ error, ...extra });
+// the categories readers can see: those of published stories (a draft can't invent a new one)
+const existingCategories = (all) => views.categories(all.filter((s) => s.published !== false));
+
+// Checks every save must pass. Returns true when the request was answered with an error.
+async function failsChecks(req, res, f, { exceptId = null, hasCover }) {
+  if (!f.title) return reject(res, 400, 'A title is required'), true;
+  if (!f.body && !f.link) return reject(res, 400, 'Add the story text, a link, or both'), true;
+  const all = await store.listAll();
+  const twin = sameTitle(all, f.title, exceptId);
+  if (twin) {
+    reject(res, 409, `A story with this title already exists${twin.published === false ? ' (as a draft)' : ''}: "${twin.title}". Choose a different topic or title.`,
+      { existing: { id: twin.id, title: twin.title, published: twin.published !== false, url: withUrl(twin).url } });
+    return true;
+  }
+  if (isAgent(req)) {
+    const problems = agentProblems(f, { publishing: f.published, hasCover, categories: existingCategories(all) });
+    if (problems.length) return reject(res, 400, problems.join(' '), { problems }), true;
+  }
+  return false;
+}
+
 const readFields = (body) => {
   const link = safeUrl(body.link);
   const text = clean(body.body, 200000);
@@ -128,6 +167,7 @@ const readFields = (body) => {
     link,
     youtubeId: youtubeId(link),
     coverAlt: clean(body.coverAlt, 200),
+    coverCredit: clean(body.coverCredit, 300),
     readMinutes: readMinutes(text),
     resources: readResources(body.resources),
     featured: body.featured === 'true' || body.featured === 'on' || body.featured === true,
@@ -307,27 +347,47 @@ app.get('/api/admin/analytics', requireAuth, ah(async (req, res) => {
 // ---------- admin API ----------
 app.get('/api/admin/stories', requireAuth, ah(async (req, res) => res.json(await store.listAll())));
 
-app.post('/api/admin/stories', requireAuth, uploadCover, ah(async (req, res) => {
-  const f = readFields(req.body);
-  if (!f.title) return res.status(400).json({ error: 'A title is required' });
-  if (!f.body && !f.link) return res.status(400).json({ error: 'Add the story text, a link, or both' });
+app.get('/api/admin/stories/:id', requireAuth, ah(async (req, res) => {
+  const s = await store.findById(req.params.id);
+  return s ? res.json(withUrl(s)) : res.status(404).json({ error: 'Story not found' });
+}));
 
-  const uploaded = await storeCover(req);
+app.post('/api/admin/stories', requireAuth, uploadCover, ah(async (req, res) => {
+  // The same submission sent again (double click, retry after a lost connection): answer with the
+  // story it already created instead of making a second copy.
+  const submissionId = submissionIdOf(req);
+  if (submissionId) {
+    const earlier = await store.findBySubmission(submissionId);
+    if (earlier) return res.json({ ...withUrl(earlier), repeated: true });
+  }
+
+  const f = readFields(req.body);
+  const pastedUrl = safeUrl(req.body.coverUrl);
+  if (await failsChecks(req, res, f, { hasCover: Boolean(req.file || pastedUrl) })) return;
+
+  // the agent page keeps a copy of web images in our own storage; the dashboard links them as before
+  const uploaded = await storeCover(req) || (isAgent(req) && pastedUrl ? await storeCoverFromUrl(pastedUrl) : null);
   try {
     const now = new Date().toISOString();
     const story = await store.insert({
       id: newId(),
       slug: await uniqueSlug(f.title),
       ...f,
-      cover: uploaded ? uploaded.url : safeUrl(req.body.coverUrl),
+      cover: uploaded ? uploaded.url : pastedUrl,
       coverKey: uploaded ? uploaded.key : null,
+      submissionId,
       createdAt: now,
       updatedAt: now,
     });
     if (uploaded) await store.recordMedia({ ...uploaded, storyId: story.id });
-    res.status(201).json(story);
+    res.status(201).json(withUrl(story));
   } catch (e) {
     if (uploaded) await media.remove(uploaded.key); // don't leave orphan files behind
+    // two copies of one submission arrived at the same moment: the other one won, answer with its story
+    if (e.code === '23505' && submissionId) {
+      const earlier = await store.findBySubmission(submissionId);
+      if (earlier) return res.json({ ...withUrl(earlier), repeated: true });
+    }
     throw e;
   }
 }));
@@ -336,26 +396,41 @@ app.put('/api/admin/stories/:id', requireAuth, uploadCover, ah(async (req, res) 
   const old = await store.findById(req.params.id);
   if (!old) return res.status(404).json({ error: 'Story not found' });
   const f = readFields(req.body);
-  if (!f.title) return res.status(400).json({ error: 'A title is required' });
-  if (!f.body && !f.link) return res.status(400).json({ error: 'Add the story text, a link, or both' });
-
-  const uploaded = await storeCover(req);
-  let cover = old.cover, coverKey = old.coverKey;
   const pastedUrl = safeUrl(req.body.coverUrl);
+  const removing = req.body.removeCover === 'true';
+  const hasCover = Boolean(req.file || (pastedUrl && !removing) || (old.cover && !removing));
+  if (await failsChecks(req, res, f, { exceptId: old.id, hasCover })) return;
+
+  const newUrl = pastedUrl && pastedUrl !== old.cover ? pastedUrl : '';
+  const uploaded = await storeCover(req) || (isAgent(req) && newUrl && !removing ? await storeCoverFromUrl(newUrl) : null);
+  let cover = old.cover, coverKey = old.coverKey;
   if (uploaded) { cover = uploaded.url; coverKey = uploaded.key; }
-  else if (req.body.removeCover === 'true') { cover = ''; coverKey = null; }
-  else if (pastedUrl && pastedUrl !== old.cover) { cover = pastedUrl; coverKey = null; }
+  else if (removing) { cover = ''; coverKey = null; }
+  else if (newUrl) { cover = newUrl; coverKey = null; }
 
   try {
     const saved = await store.update({ ...old, ...f, cover, coverKey, updatedAt: new Date().toISOString() });
     if (uploaded) await store.recordMedia({ ...uploaded, storyId: saved.id });
     // the old uploaded image is no longer used: remove it from storage
     if (old.coverKey && old.coverKey !== coverKey) { await media.remove(old.coverKey); await store.forgetMedia(old.coverKey); }
-    res.json(saved);
+    res.json(withUrl(saved));
   } catch (e) {
     if (uploaded) await media.remove(uploaded.key);
     throw e;
   }
+}));
+
+// For the agent publishing page: categories to choose from, and every story so far
+// (newest first, without the long text) so topics aren't repeated and drafts can be continued.
+app.get('/api/admin/agent/overview', requireAuth, ah(async (req, res) => {
+  const all = await store.listAll();
+  res.json({
+    categories: existingCategories(all),
+    stories: all.map((s) => ({
+      id: s.id, title: s.title, category: s.category, published: s.published !== false,
+      createdAt: s.createdAt, updatedAt: s.updatedAt, readMinutes: s.readMinutes, url: withUrl(s).url,
+    })),
+  });
 }));
 
 app.delete('/api/admin/stories/:id', requireAuth, ah(async (req, res) => {
@@ -378,6 +453,7 @@ const vendor = {
 app.get('/vendor/:file', (req, res, next) =>
   (vendor[req.params.file] ? res.sendFile(vendor[req.params.file], { maxAge: '7d' }) : next()));
 app.get('/admin', (req, res) => res.sendFile(path.join(config.PUBLIC_DIR, 'admin.html')));
+app.get('/admin/agent-publish', (req, res) => res.sendFile(path.join(config.PUBLIC_DIR, 'agent-publish.html')));
 // always re-check with the server (ETag), so updates to scripts and styles show up straight away
 app.use(express.static(config.PUBLIC_DIR, { index: false, maxAge: 0, setHeaders: (res) => res.setHeader('Cache-Control', 'no-cache') }));
 
