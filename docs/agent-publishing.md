@@ -9,7 +9,7 @@ This is one plain page, built so a browser agent can use it easily. It signs in 
 
 | Need | How |
 |---|---|
-| Sign in | The normal admin password (same sign-in as `/admin`). Sessions last 12 hours. |
+| Sign in | The normal admin password (same sign-in as `/admin`). Sessions last 13 hours. |
 | Title, author, category, description, story, sources | Ordinary labelled fields. Category is a drop-down of the existing categories (from published stories). Sources: one per line, written as `Title \| https://link`. |
 | Cover image | Either an `https://` image address (the server downloads it and keeps a copy in HiddenTimes storage) or a file upload (big photos are made smaller first). Plus an image description and an **image credit**, shown under the image. |
 | Save a draft | **Save as draft**: only needs a title and some text. Drafts are never public. |
@@ -101,7 +101,7 @@ Every day, research, write and publish ONE new story.
 
 These depend on ChatGPT, not on the website, and need testing.
 
-- **Sign-in:** the agent needs the admin password. ChatGPT Work usually asks you to take over the browser to type passwords. Its browser may not keep cookies between scheduled runs. A sign-in lasts 12 hours, so each daily run will probably need you to sign in. Never put the password in the task instructions.
+- **Sign-in:** the agent needs the admin password. ChatGPT Work usually asks you to take over the browser to type passwords. Its browser may not keep cookies between scheduled runs. A sign-in lasts 13 hours, so each daily run will probably need you to sign in. Never put the password in the task instructions.
 - **Confirmation prompts:** ChatGPT Work may stop and ask before submitting a form or publishing ("Should I click Publish?"). If nobody answers, the run waits or ends.
 - **Schedules:** ChatGPT's scheduled tasks and agent runs have their own limits on availability, run length and how many per month. They can change, and runs can fail or be skipped.
 - **Images:** some image sites block automated downloads. The page then says why. Wikimedia Commons and the Library of Congress normally work.
