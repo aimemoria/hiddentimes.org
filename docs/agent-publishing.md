@@ -10,7 +10,7 @@ This is one plain page, built so a browser agent can use it easily. It signs in 
 | Need | How |
 |---|---|
 | Sign in | The normal admin password (same sign-in as `/admin`). Sessions last 12 hours. |
-| Title, category, description, story, sources | Ordinary labelled fields. Category is a drop-down of the existing categories (from published stories). Sources: one per line, written as `Title \| https://link`. |
+| Title, author, category, description, story, sources | Ordinary labelled fields. Category is a drop-down of the existing categories (from published stories). Sources: one per line, written as `Title \| https://link`. |
 | Cover image | Either an `https://` image address (the server downloads it and keeps a copy in HiddenTimes storage) or a file upload (big photos are made smaller first). Plus an image description and an **image credit**, shown under the image. |
 | Save a draft | **Save as draft**: only needs a title and some text. Drafts are never public. |
 | Publish | **Publish story**: the server checks everything a finished story needs (list below). |
@@ -22,13 +22,14 @@ This is one plain page, built so a browser agent can use it easily. It signs in 
 **Rules for publishing** (checked by the server, not only the page):
 
 - a title of at least 10 characters
+- an author
 - an existing category
 - a short description of 40 to 300 characters
 - at least 300 words
 - at least one source with an `https://` link
 - a cover image, with an image description and an image credit
 
-Field ids, for reference: `#title`, `#category`, `#excerpt`, `#body`, `#sources`, `#cover-url`, `#cover-file`, `#cover-alt`, `#cover-credit`, `#publish-button`, `#save-draft-button`, `#result`, `#result-url`, `#history-table`. Sign-in uses `#password` and `#sign-in-button`.
+Field ids, for reference: `#title`, `#author`, `#category`, `#excerpt`, `#body`, `#sources`, `#cover-url`, `#cover-file`, `#cover-alt`, `#cover-credit`, `#publish-button`, `#save-draft-button`, `#result`, `#result-url`, `#history-table`. Sign-in uses `#password` and `#sign-in-button`.
 
 ## Setup
 
@@ -80,6 +81,7 @@ Every day, research, write and publish ONE new story.
    and source. If no suitable image exists, stop and tell me instead of using an unlicensed one.
 6. Fill in the form:
    - Story title
+   - Author: Aime Moria
    - Category: choose the closest existing one from the list
    - Short description: one or two sentences, 40 to 300 characters
    - Story content: the full Markdown story

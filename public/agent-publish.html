@@ -59,7 +59,7 @@
             <li>No invented quotations or details.</li>
             <li>The cover image may legally be reused (public domain, Creative Commons, or your own illustration), and its credit is filled in.</li>
           </ul>
-          <p class="hint">A published story needs: a title (10+ characters), a category, a short description (40 to 300 characters), at least 300 words, at least one source, a cover image with a description and a credit. A draft only needs a title and some text.</p>
+          <p class="hint">A published story needs: a title (10+ characters), an author, a category, a short description (40 to 300 characters), at least 300 words, at least one source, a cover image with a description and a credit. A draft only needs a title and some text.</p>
         </details>
 
         <div id="restore-notice" class="agent-notice" role="status" hidden>
@@ -76,13 +76,17 @@
           <input type="hidden" id="story-id" name="storyId" value="">
           <input type="hidden" id="submission-id" name="submissionId" value="">
           <!-- kept as they are when continuing a draft made on the admin dashboard -->
-          <input type="hidden" id="keep-author" name="author" value="">
           <input type="hidden" id="keep-link" name="link" value="">
           <input type="hidden" id="keep-featured" name="featured" value="false">
 
           <label class="field" for="title">
             <span>Story title</span>
             <input id="title" name="title" maxlength="160" required>
+          </label>
+
+          <label class="field" for="author">
+            <span>Author <em>shown under the title, e.g. Aime Moria</em></span>
+            <input id="author" name="author" maxlength="80" autocomplete="off">
           </label>
 
           <label class="field" for="category">

@@ -6,7 +6,7 @@
   const $ = (id) => document.getElementById(id);
   const form = $('story-form');
   const SAVE_KEY = 'hiddentimes-agent-publish-v1';
-  const FIELDS = ['title', 'category', 'excerpt', 'body', 'sources', 'cover-url', 'cover-alt', 'cover-credit'];
+  const FIELDS = ['title', 'author', 'category', 'excerpt', 'body', 'sources', 'cover-url', 'cover-alt', 'cover-credit'];
 
   let preparedCover = null;  // the chosen image file, made smaller if needed
   let preparing = null;      // promise while the image is being prepared
@@ -68,7 +68,7 @@
   const saveLocal = () => {
     try {
       const data = { savedAt: new Date().toISOString(), storyId: $('story-id').value, submissionId: $('submission-id').value,
-        keep: { author: $('keep-author').value, link: $('keep-link').value, featured: $('keep-featured').value }, currentCover };
+        keep: { link: $('keep-link').value, featured: $('keep-featured').value }, currentCover };
       FIELDS.forEach((id) => { data[id] = $(id).value; });
       localStorage.setItem(SAVE_KEY, JSON.stringify(data));
     } catch { /* storage may be unavailable; the form still works */ }
@@ -82,7 +82,6 @@
     form.dataset.restoredCategory = data.category || '';
     $('story-id').value = data.storyId || '';
     $('submission-id').value = data.submissionId || newSubmissionId();
-    $('keep-author').value = data.keep?.author || '';
     $('keep-link').value = data.keep?.link || '';
     $('keep-featured').value = data.keep?.featured || 'false';
     currentCover = data.currentCover || '';
@@ -99,7 +98,7 @@
     $('category').value = '';
     $('story-id').value = '';
     $('submission-id').value = newSubmissionId();
-    $('keep-author').value = ''; $('keep-link').value = ''; $('keep-featured').value = 'false';
+    $('keep-link').value = ''; $('keep-featured').value = 'false';
     preparedCover = null; preparing = null; currentCover = '';
     $('cover-file-info').textContent = '';
     showEditing(null);
@@ -162,7 +161,7 @@
     $('sources').value = (s.resources || []).map((x) => (x.title ? `${x.title} | ${x.url}` : x.url)).join('\n');
     $('cover-alt').value = s.coverAlt || '';
     $('cover-credit').value = s.coverCredit || '';
-    $('keep-author').value = s.author || '';
+    $('author').value = s.author || '';
     $('keep-link').value = s.link || '';
     $('keep-featured').value = s.featured ? 'true' : 'false';
     currentCover = s.cover || '';
@@ -240,7 +239,7 @@
     fd.set('coverUrl', $('cover-url').value.trim());
     fd.set('coverAlt', $('cover-alt').value.trim());
     fd.set('coverCredit', $('cover-credit').value.trim());
-    fd.set('author', $('keep-author').value);
+    fd.set('author', $('author').value.trim());
     fd.set('link', $('keep-link').value);
     fd.set('featured', $('keep-featured').value);
     fd.set('published', publishing ? 'true' : 'false');
