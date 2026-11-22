@@ -39,14 +39,13 @@ See it live at **`/logo-kit/demo.html`** while the site is running.
 ht-logo { height: 48px; }
 ```
 
-**Colours:** override any of the four colours.
+**Colours:** override any of the three colours.
 
 ```css
 ht-logo {
   --ht-ink: #0b1056;      /* HIDDENTIMES letters */
   --ht-accent: #F2A603;   /* tagline */
-  --ht-mark-bg: #0b1056;  /* badge */
-  --ht-mark-fg: #ffffff;  /* symbol inside the badge */
+  --ht-mark-bg: #0b1056;  /* badge: the brush ring and the symbol */
 }
 ```
 
@@ -84,7 +83,9 @@ The `dist/` folder has ready-made SVG files for anywhere that takes a normal ima
 | `mark-light.svg` / `mark-dark.svg` / `mark-mono.svg` | profile pictures, favicons, app icons |
 | `wordmark-light.svg` / `wordmark-dark.svg` | where the badge is shown separately |
 | `logo-mono.svg` | one-colour printing, stamps, engraving |
-| `mark-light-256.png` | phone home-screen icon (rendered from `mark-light.svg`) |
+| `favicon.svg` | browser-tab icon: the badge with a solid brush (no dry streaks, which turn to noise at 16 px) on a white rounded square, visible on light and dark tab bars |
+| `mark-light-256.png` | phone home-screen icon (rendered from `mark-light.svg` on white) |
+| `brush-underline.svg` | a short brush stroke the website uses (as a CSS mask, coloured yellow) for the active-menu underline and the dash on text-only story cards, so the pages match the logo |
 
 After changing anything in `src/`, rebuild the files with:
 
@@ -112,7 +113,7 @@ All the geometry is in **`src/shapes.js`**, with comments.
 
 ```js
 export const SPACING = {
-  tracking: 0.12,      // letter-spacing of HIDDENTIMES, in ems (like CSS letter-spacing)
+  tracking: 0,         // letter-spacing of the name, in ems (like CSS letter-spacing)
   markGap: 80,         // between the badge and the text
   taglineGap: 56,      // between HIDDENTIMES and the tagline
   taglineTracking: 20, // extra space between tagline letters
@@ -120,23 +121,40 @@ export const SPACING = {
 };
 ```
 
-For scale, the letters are 176.5 units tall (`WORDMARK_CAP` in `src/wordmark-paths.js`); the round badge is about 453. Other changes you can make:
+For scale, the letters are about 265 units tall (the d reaches 290); the round badge is about 453. Other changes you can make:
 
-- **Perfect circle:** the original badge is very slightly oval. Set `rx` and `ry` in `CIRCLE` to the same value.
-- **Thinner or thicker symbol:** change `SYMBOL.strokeWidth`.
+- **Badge ring:** its brush is `RING_STYLE` and its shape `ensoBrush()` (start angle, how far round it goes, texture seed) in `src/letters-design.js`.
+- **Symbol size inside the ring:** `SYMBOL_SCALE` in `src/symbol-path.js`.
+- **Thinner or thicker symbol:** change `width` in `SYMBOL_BRUSH_STYLE` (in `src/letters-design.js`).
 - **Brand colours:** change `THEMES` in `src/render.js`.
 
-### The HIDDENTIMES letters
+### The HiddenTimes letters and the brush-painted symbol
 
-HIDDENTIMES is set in **Archivo Medium**, the website's own sans-serif, so the logo matches the page. The letters are stored as shapes in `src/wordmark-paths.js`, taken from the font's own outlines with their normal letter widths and kerning, so the logo looks the same everywhere, even where web fonts can't load. Archivo is free (SIL Open Font License). To change the weight or the typeface, regenerate that file from another font file with a tool such as `opentype.js`.
+**HiddenTimes** is our own **dry-brush lettering**, drawn for this logo. It's not a font, so there's no font file or licence. The letters stand upright, with even space between them, and the name is one word.
 
-**Saved alternative:** a version with **HIDDEN** in Archivo Bold and TIMES in Archivo Light is kept in Git under the tag `logo-bold-hidden`. To bring back its letters:
+Each letter is a few brush strokes. The brush presses in heavily at the start and runs dry toward the end, where the stroke breaks into bristle streaks. The edges are rough, like paint on paper. The thin bars of the H and the T are fast, dry strokes that sweep past their letters.
+
+The **badge** is an open **brush ring** (an ensō), one stroke that starts heavy and runs dry, with a small gap left open, like something still to be discovered. The **symbol** inside is painted with the same brush, as two strokes that overlap where they meet. Ring, symbol and letters are all brush strokes in the same ink, so the whole logo reads as one painting. The "draw" animation paints the ring around and the symbol in.
+
+**How it's built:**
+- `src/letters-design.js` holds the design: the brush settings (`B`, `DRY`, `STREAK`, `TEX`), the layout numbers (`SLANT`, `WIDE`, `TRACK`, `SIZE`), each letter's stroke points, and `SEED`, which fixes the texture so the logo is identical every time.
+- `npm run build` paints everything once and writes the finished shapes to `src/brush-paths.js`, so browsers receive ready-made shapes and the logo appears instantly. Points that change the outline by less than `SIMPLIFY` (1 unit, about a tenth of a pixel in the header) are dropped, which keeps the full logo at about 10 KB compressed.
+- Don't edit `brush-paths.js` by hand: change `letters-design.js` and run `npm run build`.
+
+**Saved alternatives** are kept in Git under tags:
+
+| Tag | Letters |
+|---|---|
+| `logo-archivo-medium` | HIDDENTIMES in Archivo Medium (sans-serif) |
+| `logo-bold-hidden` | **HIDDEN** in Archivo Bold, TIMES in Archivo Light |
+
+To bring one back (for example the Archivo Medium version):
 
 ```
-git checkout logo-bold-hidden -- packages/hiddentimes-logo/src/wordmark-paths.js
+git checkout logo-archivo-medium -- packages/hiddentimes-logo/src
 ```
 
-Then set `tracking: 0.06` in `src/shapes.js` and run `npm run build`.
+Then run `npm run build`. Those versions used font outlines (`src/wordmark-paths.js`) instead of `src/letters-design.js`, which can then be deleted.
 
 ### Changing the tagline
 
@@ -147,6 +165,10 @@ The tagline letters are stored as shapes, so the logo looks the same everywhere,
 ```
 index.js              entry point (renderLogo, THEMES, shapes)
 src/shapes.js         ← the logo's geometry; edit here
+src/letters-design.js our own brush letters + brush for the symbol; edit here
+src/brush-paths.js    the painted shapes (generated by npm run build)
+src/symbol-path.js    the symbol's line (the brush follows it)
+scripts/build-letters.js  paints letters-design.js into brush-paths.js
 src/tagline-paths.js  tagline letter shapes (generated)
 src/render.js         builds the SVG + colour themes
 src/element.js        the <ht-logo> element + animations

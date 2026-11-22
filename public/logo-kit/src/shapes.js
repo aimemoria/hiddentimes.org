@@ -6,45 +6,27 @@
 // the <ht-logo> element, animations) is built from this file.
 
 import { TAGLINE_GLYPHS } from './tagline-paths.js';
-import { WORDMARK, WORDMARK_EM, WORDMARK_CAP } from './wordmark-paths.js';
+import { WORDMARK, WORDMARK_EM, WORDMARK_TOP, SYMBOL_BRUSH_BASE, RING_BRUSH_BASE, RING_GUIDE_BASE } from './brush-paths.js';
+import { BASE_SYMBOL, BASE_CIRCLE } from './symbol-path.js';
 
 // ---------- the round mark ----------
 
 // The original badge is very slightly taller than wide (rx 219.75 vs ry 226.5).
 // Set rx and ry to the same value for a perfect circle.
-const BASE_CIRCLE = { cx: 226.75, cy: 232.5, rx: 219.75, ry: 226.5 };
+// (BASE_CIRCLE, in symbol-path.js, is the badge's area: the brush ring is painted just inside it.)
 
-// The white symbol inside the circle is one closed line, drawn with a thick
-// stroke and rounded corners. Straight runs + quadratic curves at each corner.
-const BASE_SYMBOL = {
-  strokeWidth: 35,
-  d: [
-    'M121.4 154',
-    'Q121.5 70.5 176.2 133.5',     // top-left corner
-    'L223.5 188',
-    'Q243.5 211 266.9 191.5',      // upper notch
-    'L314.2 152.1',
-    'Q353 119.8 353.2 170.3',      // top-right corner
-    'L353.7 280.5',
-    'Q354 335 311.5 300.9',        // bottom-right corner
-    'L265.9 264.2',
-    'Q242.5 245.4 223.7 268.8',    // lower notch
-    'L176.6 327.6',
-    'Q121 397.1 121.1 308.1',      // bottom-left corner
-    'Z',
-  ].join(' '),
-};
+// The white symbol is in symbol-path.js; it is painted with the brush at build time (brush-paths.js).
 
-// ---------- the wordmark: H I D D E N T I M E S ----------
-// HIDDENTIMES is Archivo Medium, the website's own sans-serif, in one medium weight
-// (outlines in wordmark-paths.js, so the logo looks the same everywhere, even without web fonts).
+// ---------- the wordmark: H i d d e n T i m e s ----------
+// "HiddenTimes" is our own dry-brush lettering, designed in letters-design.js and painted at build time
+// into brush-paths.js (shapes, not a font, so the logo looks the same everywhere and loads instantly).
 
 const BOT = 272;       // baseline
-const TOP = BOT - WORDMARK_CAP; // cap top (letter height comes from wordmark-paths.js)
+const TOP = BOT - WORDMARK_TOP; // top of the tallest shape (the ascender of the d)
 
-// ---------- spacing (all in logo units; the letters are WORDMARK_CAP = 176.5 units tall) ----------
+// ---------- spacing (all in logo units; the capitals are about 235 units tall) ----------
 export const SPACING = {
-  tracking: 0.08,      // letter-spacing of HIDDENTIMES, in ems like CSS (0 = the font's normal spacing)
+  tracking: 0,         // letter-spacing of the wordmark, in ems like CSS (0 = the font's normal spacing)
   markGap: 80,         // space between the badge and the text (original: 38)
   taglineGap: 56,      // space between HIDDENTIMES and the tagline (original: 20)
   taglineTracking: 20, // extra space between tagline letters (original: 0)
@@ -96,6 +78,11 @@ const badgeDY = (blockTop + blockBottom) / 2 - BASE_CIRCLE.cy;
 
 export const CIRCLE = { ...BASE_CIRCLE, cy: BASE_CIRCLE.cy + badgeDY };
 export const SYMBOL = { ...BASE_SYMBOL, d: shiftPath(BASE_SYMBOL.d, 0, badgeDY) };
+
+// The symbol painted with the same brush as the letters (made at build time, see letters-design.js).
+// SYMBOL.d (above) stays as the guide line the "draw" animation follows to reveal the paint.
+export const SYMBOL_BRUSH = shiftPath(SYMBOL_BRUSH_BASE, 0, badgeDY);
+export const RING = { d: shiftPath(RING_BRUSH_BASE, 0, badgeDY), guide: shiftPath(RING_GUIDE_BASE, 0, badgeDY) };
 
 // Without the tagline, HIDDENTIMES alone sits on the badge's vertical centre:
 // the badge moves by this much (applied by render.js).

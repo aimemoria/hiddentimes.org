@@ -1,6 +1,6 @@
 // HiddenTimes logo: turns the geometry into SVG markup.
 
-import { CIRCLE, SYMBOL, LETTERS, TAGLINE, VIEWBOX, MARK_SHIFT_NO_TAGLINE } from './shapes.js';
+import { CIRCLE, SYMBOL, SYMBOL_BRUSH, RING, LETTERS, TAGLINE, VIEWBOX, MARK_SHIFT_NO_TAGLINE } from './shapes.js';
 
 // Colour sets. "light" is for light backgrounds, "dark" for dark ones.
 export const THEMES = {
@@ -45,23 +45,19 @@ export function renderLogo(o = {}) {
   const id = `ht${++uid}`;
 
   let mark = '';
-  const badge = (extra) =>
-    `<ellipse class="ht-circle" part="circle" cx="${CIRCLE.cx}" cy="${CIRCLE.cy}" rx="${CIRCLE.rx}" ry="${CIRCLE.ry}" ${fill(c.markBg)}${extra}/>`;
 
   if (variant !== 'wordmark') {
-    const symbolPath = `d="${SYMBOL.d}" fill="none" stroke-width="${SYMBOL.strokeWidth}" stroke-linejoin="round" stroke-linecap="round" pathLength="1"`;
-    if (c.markFg === 'knockout') {
-      mark = `<defs><mask id="${id}-k" maskUnits="userSpaceOnUse" x="-20" y="-20" width="500" height="540">
-        <rect x="-20" y="-20" width="500" height="540" fill="#fff"/><path ${symbolPath} stroke="#000"/></mask></defs>
+    // The badge is an open brush ring (ensō) with the brush-painted symbol inside, both in the
+    // badge colour (markBg). Each is shown through a wide line along its own path (in a mask):
+    // animating those lines (.ht-symbol) makes the paint appear as if it were being painted.
+    const pad = 70;
+    const box = `maskUnits="userSpaceOnUse" x="${+(CIRCLE.cx - CIRCLE.rx - pad).toFixed(2)}" y="${+(CIRCLE.cy - CIRCLE.ry - pad).toFixed(2)}" width="${+(CIRCLE.rx * 2 + pad * 2).toFixed(2)}" height="${+(CIRCLE.ry * 2 + pad * 2).toFixed(2)}"`;
+    const guide = (d, w) => `<path class="ht-symbol" d="${d}" fill="none" stroke="#fff" stroke-width="${w}" stroke-linejoin="round" stroke-linecap="round" pathLength="1"/>`;
+    mark = `<defs><mask id="${id}-r" ${box}>${guide(RING.guide, 110)}</mask><mask id="${id}-s" ${box}>${guide(SYMBOL.d, 80)}</mask></defs>
       <g class="ht-mark" part="mark">
-        ${badge(` mask="url(#${id}-k)"`)}
+        <path class="ht-circle" part="circle" d="${RING.d}" mask="url(#${id}-r)" ${fill(c.markBg)}/>
+        <path class="ht-symbol-paint" part="symbol" d="${SYMBOL_BRUSH}" mask="url(#${id}-s)" ${fill(c.markBg)}/>
       </g>`;
-    } else {
-      mark = `<g class="ht-mark" part="mark">
-        ${badge('')}
-        <path class="ht-symbol" part="symbol" ${symbolPath} ${o.css ? `style="stroke:${c.markFg}"` : `stroke="${c.markFg}"`}/>
-      </g>`;
-    }
     if (markShift) mark = `<g transform="translate(0 ${markShift})">${mark}</g>`;
   }
 

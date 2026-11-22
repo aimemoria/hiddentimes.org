@@ -13,7 +13,7 @@
   },
   "files": ["index.js", "src", "dist", "README.md"],
   "scripts": {
-    "build": "node scripts/build.js"
+    "build": "node scripts/build-letters.js && node scripts/build.js"
   },
   "license": "UNLICENSED",
   "private": true
