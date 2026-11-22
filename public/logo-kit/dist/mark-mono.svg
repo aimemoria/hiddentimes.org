@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 22.75 453.5 465" role="img" aria-label="HiddenTimes" class="ht-logo" part="svg"><title>HiddenTimes</title><defs><mask id="ht8-k" maskUnits="userSpaceOnUse" x="-20" y="-20" width="500" height="540">
+        <rect x="-20" y="-20" width="500" height="540" fill="#fff"/><path d="M121.4 176.75Q121.5 93.25 176.2 156.25L223.5 210.75Q243.5 233.75 266.9 214.25L314.2 174.85Q353 142.55 353.2 193.05L353.7 303.25Q354 357.75 311.5 323.65L265.9 286.95Q242.5 268.15 223.7 291.55L176.6 350.35Q121 419.85 121.1 330.85Z" fill="none" stroke-width="35" stroke-linejoin="round" stroke-linecap="round" pathLength="1" stroke="#000"/></mask></defs>
+      <g class="ht-mark" part="mark">
+        <ellipse class="ht-circle" part="circle" cx="226.75" cy="255.25" rx="219.75" ry="226.5" fill="currentColor" mask="url(#ht8-k)"/>
+      </g></svg>

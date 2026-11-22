@@ -14,7 +14,3 @@ private/
 # Claude Code personal settings
 .claude/settings.local.json
 
-# copied in by `npm run build` (Vercel); the originals live in packages/ and node_modules/
-public/logo-kit/
-public/image-kit/
-public/vendor/

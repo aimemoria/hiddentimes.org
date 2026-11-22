@@ -453,7 +453,7 @@ const vendor = {
   'purify.min.js': path.join(config.ROOT, 'node_modules', 'dompurify', 'dist', 'purify.min.js'),
 };
 app.get('/vendor/:file', (req, res, next) =>
-  (vendor[req.params.file] ? res.sendFile(vendor[req.params.file], { maxAge: '7d' }) : next()));
+  (vendor[req.params.file] ? res.sendFile(vendor[req.params.file], { maxAge: '7d' }, (err) => err && next()) : next())); // a missing file is a plain 404, never an error that shows server paths
 app.get('/admin', (req, res) => res.sendFile(path.join(config.PUBLIC_DIR, 'admin.html')));
 app.get('/admin/agent-publish', (req, res) => res.sendFile(path.join(config.PUBLIC_DIR, 'agent-publish.html')));
 // always re-check with the server (ETag), so updates to scripts and styles show up straight away
@@ -466,7 +466,8 @@ app.use(ah(async (req, res) => html(res, views.notFoundPage(await store.listPubl
 app.use((err, req, res, next) => {
   if (!err.status || err.status >= 500) console.error(err);
   const status = err.status || 500;
-  const message = status < 500 ? err.message : 'Something went wrong on the server. Please try again.';
+  // file-system errors (they carry .syscall) never reach visitors: their messages contain server paths
+  const message = status < 500 && !err.syscall ? err.message : status === 404 ? 'Not found' : 'Something went wrong on the server. Please try again.';
   if (req.path.startsWith('/api/')) return res.status(status).json({ error: message });
   res.status(status).type('text/plain').send(message);
 });
