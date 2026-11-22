@@ -6,7 +6,7 @@
 // the <ht-logo> element, animations) is built from this file.
 
 import { TAGLINE_GLYPHS } from './tagline-paths.js';
-import { WORDMARK_GLYPHS, WORDMARK_KERNING, WORDMARK_EM } from './wordmark-paths.js';
+import { WORDMARK, WORDMARK_EM } from './wordmark-paths.js';
 
 // ---------- the round mark ----------
 
@@ -36,7 +36,8 @@ const BASE_SYMBOL = {
 };
 
 // ---------- the wordmark: H I D D E N T I M E S ----------
-// Letters are Newsreader SemiBold, the serif of the website's headlines and story text
+// HIDDEN is Archivo Bold and TIMES is Archivo Light, the website's own sans-serif: the change of
+// weight shows where the two words meet, without a space
 // (outlines in wordmark-paths.js, so the logo looks the same everywhere, even without web fonts).
 
 const TOP = 95.5;      // cap top
@@ -44,7 +45,7 @@ const BOT = 272;       // baseline (letters are 176.5 units tall)
 
 // ---------- spacing (all in logo units; the letters are 176.5 units tall) ----------
 export const SPACING = {
-  tracking: 0.10,      // letter-spacing of HIDDENTIMES, in ems like CSS (0 = the font's normal spacing)
+  tracking: 0.06,      // letter-spacing of HIDDENTIMES, in ems like CSS (0 = the font's normal spacing)
   markGap: 80,         // space between the badge and the text (original: 38)
   taglineGap: 56,      // space between HIDDENTIMES and the tagline (original: 20)
   taglineTracking: 20, // extra space between tagline letters (original: 0)
@@ -65,15 +66,13 @@ const textX = BASE_CIRCLE.cx + BASE_CIRCLE.rx + SPACING.markGap;
 
 // Set the letters like the browser sets text: each one's advance width, plus the font's
 // kerning, plus the tracking. The first letter's ink starts exactly at textX.
-const WORD = 'HIDDENTIMES';
 const trackingUnits = SPACING.tracking * WORDMARK_EM;
-let pen = textX - WORDMARK_GLYPHS[WORD[0]].inkLeft;
+let pen = textX - WORDMARK[0].inkLeft;
 let wordRight = textX;
-export const LETTERS = [...WORD].map((ch, i) => {
-  const g = WORDMARK_GLYPHS[ch];
-  const out = { ch, d: shiftPath(g.d, pen, 0) };
+export const LETTERS = WORDMARK.map((g) => {
+  const out = { ch: g.ch, weight: g.weight, d: shiftPath(g.d, pen, 0) };
   wordRight = pen + g.inkRight;                      // the last letter's real right edge
-  pen += g.advance + (WORDMARK_KERNING[i] || 0) + trackingUnits;
+  pen += g.advance + g.kern + trackingUnits;
   return out;
 });
 
