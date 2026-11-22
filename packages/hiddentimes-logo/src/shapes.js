@@ -36,8 +36,7 @@ const BASE_SYMBOL = {
 };
 
 // ---------- the wordmark: H I D D E N T I M E S ----------
-// HIDDEN is Archivo Bold and TIMES is Archivo Light, the website's own sans-serif: the change of
-// weight shows where the two words meet, without a space
+// HIDDENTIMES is Archivo Light, the website's own sans-serif, in one light weight
 // (outlines in wordmark-paths.js, so the logo looks the same everywhere, even without web fonts).
 
 const TOP = 95.5;      // cap top
@@ -45,7 +44,7 @@ const BOT = 272;       // baseline (letters are 176.5 units tall)
 
 // ---------- spacing (all in logo units; the letters are 176.5 units tall) ----------
 export const SPACING = {
-  tracking: 0.06,      // letter-spacing of HIDDENTIMES, in ems like CSS (0 = the font's normal spacing)
+  tracking: 0.08,      // letter-spacing of HIDDENTIMES, in ems like CSS (0 = the font's normal spacing)
   markGap: 80,         // space between the badge and the text (original: 38)
   taglineGap: 56,      // space between HIDDENTIMES and the tagline (original: 20)
   taglineTracking: 20, // extra space between tagline letters (original: 0)

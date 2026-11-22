@@ -128,7 +128,15 @@ For scale, the letters are 176.5 units tall. Other changes you can make:
 
 ### The HIDDENTIMES letters
 
-HIDDEN is set in **Archivo Bold** and TIMES in **Archivo Light**: the website's own sans-serif, so the logo matches the page. The change of weight shows where the two words meet, without a space. The letters are stored as shapes in `src/wordmark-paths.js`, taken from the font's own outlines with their normal letter widths and kerning, so the logo looks the same everywhere, even where web fonts can't load. Archivo is free (SIL Open Font License). To change the weight or the typeface, regenerate that file from another font file with a tool such as `opentype.js`.
+HIDDENTIMES is set in **Archivo Light**, the website's own sans-serif, so the logo matches the page. The letters are stored as shapes in `src/wordmark-paths.js`, taken from the font's own outlines with their normal letter widths and kerning, so the logo looks the same everywhere, even where web fonts can't load. Archivo is free (SIL Open Font License). To change the weight or the typeface, regenerate that file from another font file with a tool such as `opentype.js`.
+
+**Saved alternative:** a version with **HIDDEN** in Archivo Bold and TIMES in Archivo Light is kept in Git under the tag `logo-bold-hidden`. To bring back its letters:
+
+```
+git checkout logo-bold-hidden -- packages/hiddentimes-logo/src/wordmark-paths.js
+```
+
+Then set `tracking: 0.06` in `src/shapes.js` and run `npm run build`.
 
 ### Changing the tagline
 
