@@ -120,7 +120,7 @@ export const SPACING = {
 };
 ```
 
-For scale, the letters are 176.5 units tall. Other changes you can make:
+For scale, the letters are 203 units tall (`WORDMARK_CAP` in `src/wordmark-paths.js`); the round badge is about 453. Other changes you can make:
 
 - **Perfect circle:** the original badge is very slightly oval. Set `rx` and `ry` in `CIRCLE` to the same value.
 - **Thinner or thicker symbol:** change `SYMBOL.strokeWidth`.

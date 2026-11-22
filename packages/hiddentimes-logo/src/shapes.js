@@ -6,7 +6,7 @@
 // the <ht-logo> element, animations) is built from this file.
 
 import { TAGLINE_GLYPHS } from './tagline-paths.js';
-import { WORDMARK, WORDMARK_EM } from './wordmark-paths.js';
+import { WORDMARK, WORDMARK_EM, WORDMARK_CAP } from './wordmark-paths.js';
 
 // ---------- the round mark ----------
 
@@ -39,10 +39,10 @@ const BASE_SYMBOL = {
 // HIDDENTIMES is Archivo Light, the website's own sans-serif, in one light weight
 // (outlines in wordmark-paths.js, so the logo looks the same everywhere, even without web fonts).
 
-const TOP = 95.5;      // cap top
-const BOT = 272;       // baseline (letters are 176.5 units tall)
+const BOT = 272;       // baseline
+const TOP = BOT - WORDMARK_CAP; // cap top (letter height comes from wordmark-paths.js)
 
-// ---------- spacing (all in logo units; the letters are 176.5 units tall) ----------
+// ---------- spacing (all in logo units; the letters are WORDMARK_CAP = 203 units tall) ----------
 export const SPACING = {
   tracking: 0.08,      // letter-spacing of HIDDENTIMES, in ems like CSS (0 = the font's normal spacing)
   markGap: 80,         // space between the badge and the text (original: 38)
