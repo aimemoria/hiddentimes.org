@@ -36,13 +36,13 @@ const BASE_SYMBOL = {
 };
 
 // ---------- the wordmark: H I D D E N T I M E S ----------
-// HIDDENTIMES is Archivo Light, the website's own sans-serif, in one light weight
+// HIDDENTIMES is Archivo Medium, the website's own sans-serif, in one medium weight
 // (outlines in wordmark-paths.js, so the logo looks the same everywhere, even without web fonts).
 
 const BOT = 272;       // baseline
 const TOP = BOT - WORDMARK_CAP; // cap top (letter height comes from wordmark-paths.js)
 
-// ---------- spacing (all in logo units; the letters are WORDMARK_CAP = 203 units tall) ----------
+// ---------- spacing (all in logo units; the letters are WORDMARK_CAP = 176.5 units tall) ----------
 export const SPACING = {
   tracking: 0.08,      // letter-spacing of HIDDENTIMES, in ems like CSS (0 = the font's normal spacing)
   markGap: 80,         // space between the badge and the text (original: 38)
