@@ -443,8 +443,10 @@ app.delete('/api/admin/stories/:id', requireAuth, ah(async (req, res) => {
 
 // ---------- files ----------
 if (media.kind === 'local folder') app.use('/uploads', express.static(config.LOCAL_UPLOADS_DIR, { maxAge: '30d' }));
-app.use('/logo-kit', express.static(path.join(config.ROOT, 'packages', 'hiddentimes-logo'), { maxAge: '1d' }));
-app.use('/image-kit', express.static(path.join(config.ROOT, 'packages', 'image-shrink'), { maxAge: '1d' }));
+// same as the site's own files: always check for a newer version (ETag), so logo updates show at once
+const revalidate = { maxAge: 0, setHeaders: (res) => res.setHeader('Cache-Control', 'no-cache') };
+app.use('/logo-kit', express.static(path.join(config.ROOT, 'packages', 'hiddentimes-logo'), revalidate));
+app.use('/image-kit', express.static(path.join(config.ROOT, 'packages', 'image-shrink'), revalidate));
 // Markdown reader + HTML cleaner for the admin preview
 const vendor = {
   'marked.min.js': path.join(config.ROOT, 'node_modules', 'marked', 'marked.min.js'),

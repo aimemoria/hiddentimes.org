@@ -112,7 +112,7 @@ All the geometry is in **`src/shapes.js`**, with comments.
 
 ```js
 export const SPACING = {
-  letterGap: 42,       // between letters of HIDDENTIMES
+  tracking: 0.12,      // letter-spacing of HIDDENTIMES, in ems (like CSS letter-spacing)
   markGap: 80,         // between the badge and the text
   taglineGap: 56,      // between HIDDENTIMES and the tagline
   taglineTracking: 20, // extra space between tagline letters
@@ -124,8 +124,11 @@ For scale, the letters are 176.5 units tall. Other changes you can make:
 
 - **Perfect circle:** the original badge is very slightly oval. Set `rx` and `ry` in `CIRCLE` to the same value.
 - **Thinner or thicker symbol:** change `SYMBOL.strokeWidth`.
-- **Letter weight:** change `STEM`, and the matching numbers in the letter functions.
 - **Brand colours:** change `THEMES` in `src/render.js`.
+
+### The HIDDENTIMES letters
+
+HIDDENTIMES is set in **Archivo SemiBold**, the typeface the website uses for its menus and labels, so the logo sits naturally beside them. The letters are stored as shapes in `src/wordmark-paths.js`, taken from the font's own outlines with its normal letter widths, so the logo looks the same everywhere, even where web fonts can't load. Archivo is free (SIL Open Font License). To change the weight, regenerate that file from another Archivo weight with a tool such as `opentype.js`.
 
 ### Changing the tagline
 
