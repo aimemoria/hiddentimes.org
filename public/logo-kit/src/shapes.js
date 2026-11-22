@@ -37,7 +37,6 @@ const BASE_SYMBOL = {
 
 // ---------- the wordmark: H I D D E N T I M E S ----------
 // HIDDENTIMES is Archivo Light, the website's own sans-serif, in one light weight
-
 // (outlines in wordmark-paths.js, so the logo looks the same everywhere, even without web fonts).
 
 const TOP = 95.5;      // cap top
