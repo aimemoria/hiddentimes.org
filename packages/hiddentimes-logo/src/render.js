@@ -68,7 +68,7 @@ export function renderLogo(o = {}) {
   let words = '';
   if (variant !== 'mark') {
     words = `<g class="ht-wordmark" part="wordmark" ${fill(c.ink)}>
-      ${LETTERS.map((l, i) => `<path class="ht-letter" part="letter" style="--i:${i}" fill-rule="evenodd" d="${l.d}"/>`).join('')}
+      ${LETTERS.map((l, i) => `<path class="ht-letter" part="letter" style="--i:${i}" d="${l.d}"/>`).join('')}
     </g>`;
     if (tagline) {
       words += `<g class="ht-tagline" part="tagline" ${fill(c.accent)}>

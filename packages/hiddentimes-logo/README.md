@@ -128,7 +128,7 @@ For scale, the letters are 176.5 units tall. Other changes you can make:
 
 ### The HIDDENTIMES letters
 
-HIDDENTIMES is set in **Archivo SemiBold**, the typeface the website uses for its menus and labels, so the logo sits naturally beside them. The letters are stored as shapes in `src/wordmark-paths.js`, taken from the font's own outlines with its normal letter widths, so the logo looks the same everywhere, even where web fonts can't load. Archivo is free (SIL Open Font License). To change the weight, regenerate that file from another Archivo weight with a tool such as `opentype.js`.
+HIDDENTIMES is set in **Newsreader SemiBold**, the serif the website uses for its headlines and story text, so the logo matches the page. The letters are stored as shapes in `src/wordmark-paths.js`, taken from the font's own outlines with its normal letter widths, so the logo looks the same everywhere, even where web fonts can't load. Newsreader is free (SIL Open Font License). To change the weight or the typeface, regenerate that file from another font file with a tool such as `opentype.js`.
 
 ### Changing the tagline
 

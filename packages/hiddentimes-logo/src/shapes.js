@@ -36,7 +36,7 @@ const BASE_SYMBOL = {
 };
 
 // ---------- the wordmark: H I D D E N T I M E S ----------
-// Letters are Archivo SemiBold, the typeface of the website's menus and labels
+// Letters are Newsreader SemiBold, the serif of the website's headlines and story text
 // (outlines in wordmark-paths.js, so the logo looks the same everywhere, even without web fonts).
 
 const TOP = 95.5;      // cap top
@@ -44,7 +44,7 @@ const BOT = 272;       // baseline (letters are 176.5 units tall)
 
 // ---------- spacing (all in logo units; the letters are 176.5 units tall) ----------
 export const SPACING = {
-  tracking: 0.12,      // letter-spacing of HIDDENTIMES, in ems like CSS (0 = the font's normal spacing)
+  tracking: 0.10,      // letter-spacing of HIDDENTIMES, in ems like CSS (0 = the font's normal spacing)
   markGap: 80,         // space between the badge and the text (original: 38)
   taglineGap: 56,      // space between HIDDENTIMES and the tagline (original: 20)
   taglineTracking: 20, // extra space between tagline letters (original: 0)
