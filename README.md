@@ -44,7 +44,7 @@ Passwords and keys never go in this file. They belong only in `.env`.
 Supabase gives you the database and the image storage in one free account.
 
 1. **Create a project** at supabase.com. Choose *Continue with GitHub* and sign in as the account above. Choose a strong database password and the region closest to your readers.
-2. **Database:** click **Connect** at the top of the project, open *Connection String*, choose **Session pooler** (it works on every network, and suits a server that stays running), copy the URI, replace `[YOUR-PASSWORD]` with your database password, and paste it into `.env` as `DATABASE_URL`. Then go to *Project Settings → Database → SSL Configuration*, click **Download certificate**, save it as `certs/supabase-ca.crt`, and keep `DATABASE_CA_FILE=./certs/supabase-ca.crt`.
+2. **Database:** click **Connect** at the top of the project, open *Connection String*, choose **Transaction pooler** (port 6543: it works on every network and allows many connections; the Session pooler, port 5432, allows only 15 in total), copy the URI, replace `[YOUR-PASSWORD]` with your database password, and paste it into `.env` as `DATABASE_URL`. Then go to *Project Settings → Database → SSL Configuration*, click **Download certificate**, save it as `certs/supabase-ca.crt`, and keep `DATABASE_CA_FILE=./certs/supabase-ca.crt`.
 3. **Image bucket:** go to *Storage → New bucket*, name it `stories`, and tick **Public bucket**, so readers can see the images.
 4. **Storage keys:** go to *Project Settings → Storage → S3 Connection*, create an access key, and fill in `.env`:
    ```
@@ -160,7 +160,7 @@ The site runs on Vercel's free **Hobby** plan, connected to the GitHub repo `aim
    | `SITE_URL` | `https://www.hiddentimes.org` |
    | `ADMIN_PASSWORD` | the starting admin password |
    | `SESSION_SECRET` | a long random text: it signs the admin sign-in cookie |
-   | `DATABASE_URL` | the Supabase **Transaction pooler** address (port 6543, best for Vercel) |
+   | `DATABASE_URL` | the Supabase **Transaction pooler** address (port 6543). Don't use the Session pooler (port 5432): it allows only 15 connections in total |
    | `DATABASE_CA` | the full text of `certs/supabase-ca.crt`. Open the file in VS Code, copy everything, and paste it in |
    | `S3_BUCKET`, `S3_REGION`, `S3_ENDPOINT`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`, `S3_PUBLIC_URL`, `S3_FORCE_PATH_STYLE` | same as in `.env` |
 
